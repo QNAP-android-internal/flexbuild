@@ -68,9 +68,42 @@ sudo tar -I zstd -xvf ../../build_lsdk2406/images/"$TARGET_ROOTFS"
 sync
 cd lib/
 sudo rm -rf modules
+sudo rm -rf firmware
 cd ..
 sudo mkdir -p lib/modules/
+sudo mkdir -p lib/firmware/bcmdhd
 sudo cp -rv ../kernel_imx/modules/lib/modules/* lib/modules/
+
+sudo rm -rf opt/imx8-isp/bin/start_isp.sh
+sudo touch opt/imx8-isp/bin/start_isp.sh
+sudo chmod a+x opt/imx8-isp/bin/start_isp.sh
+sudo tee opt/imx8-isp/bin/start_isp.sh << END
+#!/bin/sh
+
+AUD_CARD=\`cat /proc/asound/cards |grep 5672 |grep :|awk  '{print \$1}'\`
+
+# alc5672
+amixer -c \$AUD_CARD sset 'IN1 Boost' '2'
+amixer -c \$AUD_CARD sset 'RECMIXL BST1' 'on'
+amixer -c \$AUD_CARD sset 'RECMIXR BST1' 'on'
+amixer -c \$AUD_CARD sset 'Sto1 ADC MIXL ADC1' 'on'
+amixer -c \$AUD_CARD sset 'Sto1 ADC MIXL ADC2' 'on'
+amixer -c \$AUD_CARD sset 'Sto1 ADC MIXR ADC1' 'on'
+amixer -c \$AUD_CARD sset 'Sto1 ADC MIXR ADC2' 'on'
+amixer -c \$AUD_CARD sset 'Sto2 ADC MIXL ADC1' 'on'
+amixer -c \$AUD_CARD sset 'Sto2 ADC MIXL ADC2' 'on'
+amixer -c \$AUD_CARD sset 'Sto2 ADC MIXR ADC1' 'on'
+amixer -c \$AUD_CARD sset 'Sto2 ADC MIXR ADC2' 'on'
+amixer -c \$AUD_CARD sset 'Stereo DAC MIXL DAC L1' 'on'
+amixer -c \$AUD_CARD sset 'Stereo DAC MIXR DAC R1' 'on'
+
+amixer -c \$AUD_CARD sset 'HPOVOL MIXL DAC1' 'on'
+amixer -c \$AUD_CARD sset 'HPOVOL MIXR DAC1' 'on'
+amixer -c \$AUD_CARD sset 'HPO MIX HPVOL' 'on'
+amixer -c \$AUD_CARD sset 'PDM1 L Mux' 'Stereo DAC'
+amixer -c \$AUD_CARD sset 'PDM1 R Mux' 'Stereo DAC'
+END
+
 cd ..
 sudo umount mnt
 rm -rf mnt
