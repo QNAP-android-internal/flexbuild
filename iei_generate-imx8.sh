@@ -13,6 +13,10 @@ CPU_NUM=16
 export CROSS_COMPILE=$CC
 
 bld -m imx8mpevk
+
+# iei added
+sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin/bash -c "apt update; apt install modemmanager"
+
 bld packrfs -p IMX
 
 mkdir build_ieibsp
