@@ -17,7 +17,7 @@ bld -m imx8mpevk
 # iei added
 sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin/bash -c " \
     yes "Y" | apt update; \
-    yes "Y" | apt install modemmanager \
+    yes "Y" | apt install modemmanager gpiod \
 "
 
 bld packrfs -p IMX
