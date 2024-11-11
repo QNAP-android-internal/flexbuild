@@ -90,6 +90,9 @@ sudo mkdir -p lib/modules/
 sudo mkdir -p lib/firmware/bcmdhd
 sudo cp -rv ../kernel_imx/modules/lib/modules/* lib/modules/
 
+# added iei firmware files
+sudo cp -rv ../../iei_firmware/imx lib/firmware/
+
 sudo rm -rf opt/imx8-isp/bin/start_isp.sh
 sudo touch opt/imx8-isp/bin/start_isp.sh
 sudo chmod a+x opt/imx8-isp/bin/start_isp.sh
