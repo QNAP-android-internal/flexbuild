@@ -121,6 +121,21 @@ amixer -c \$AUD_CARD sset 'HPOVOL MIXR DAC1' 'on'
 amixer -c \$AUD_CARD sset 'HPO MIX HPVOL' 'on'
 amixer -c \$AUD_CARD sset 'PDM1 L Mux' 'Stereo DAC'
 amixer -c \$AUD_CARD sset 'PDM1 R Mux' 'Stereo DAC'
+
+#wifi 6 AP6275S detection and initial bluetooth
+WIFI_VID=\$(cat /sys/class/mmc_host/mmc0/mmc0\:0001/vendor)
+WIFI_PID=\$(cat /sys/class/mmc_host/mmc0/mmc0\:0001/device)
+
+echo 0 > /sys/class/rfkill/rfkill0/state
+sleep 1
+echo 1 > /sys/class/rfkill/rfkill0/state
+sleep 5
+if [ "\$WIFI_VID" = "0x02d0" -a "\$WIFI_PID" = "0xaae8" ];then
+	bt_firmware_path=/lib/firmware/BCM4362A2_001.003.006.1045.1053.hcd
+	baudrate=3000000
+	sudo brcm-patchram-plus --enable_hci --no2bytes --use_baudrate_for_download --tosleep 200000 --baudrate "\$baudrate" --patchram "\$bt_firmware_path" /dev/ttymxc0
+fi
+
 END
 
 cd ..
