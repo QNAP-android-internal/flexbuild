@@ -20,6 +20,15 @@ sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin
     yes "Y" | apt install modemmanager gpiod \
 "
 
+sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin/bash -c " \
+    wget https://raw.githubusercontent.com/AsteroidOS/brcm-patchram-plus/refs/heads/master/src/main.c; \
+    mv main.c brcm-patchram-plus.c; \
+    gcc brcm-patchram-plus.c -o brcm-patchram-plus; \
+    mv brcm-patchram-plus /usr/bin/; \
+    chmod a+x /usr/bin/brcm-patchram-plus; \
+    rm brcm-patchram-plus.c; \
+"
+
 bld packrfs -p IMX
 
 mkdir build_ieibsp
