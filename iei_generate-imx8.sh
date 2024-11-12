@@ -104,28 +104,29 @@ sudo chmod a+x opt/imx8-isp/bin/start_isp.sh
 sudo tee opt/imx8-isp/bin/start_isp.sh << END
 #!/bin/sh
 
+sleep 5
 AUD_CARD=\`cat /proc/asound/cards |grep 5672 |grep :|awk  '{print \$1}'\`
 
 # alc5672
-amixer -c \$AUD_CARD sset 'IN1 Boost' '2'
-amixer -c \$AUD_CARD sset 'RECMIXL BST1' 'on'
-amixer -c \$AUD_CARD sset 'RECMIXR BST1' 'on'
-amixer -c \$AUD_CARD sset 'Sto1 ADC MIXL ADC1' 'on'
-amixer -c \$AUD_CARD sset 'Sto1 ADC MIXL ADC2' 'on'
-amixer -c \$AUD_CARD sset 'Sto1 ADC MIXR ADC1' 'on'
-amixer -c \$AUD_CARD sset 'Sto1 ADC MIXR ADC2' 'on'
-amixer -c \$AUD_CARD sset 'Sto2 ADC MIXL ADC1' 'on'
-amixer -c \$AUD_CARD sset 'Sto2 ADC MIXL ADC2' 'on'
-amixer -c \$AUD_CARD sset 'Sto2 ADC MIXR ADC1' 'on'
-amixer -c \$AUD_CARD sset 'Sto2 ADC MIXR ADC2' 'on'
-amixer -c \$AUD_CARD sset 'Stereo DAC MIXL DAC L1' 'on'
-amixer -c \$AUD_CARD sset 'Stereo DAC MIXR DAC R1' 'on'
+sudo amixer -c \$AUD_CARD sset 'IN1 Boost' '2'
+sudo amixer -c \$AUD_CARD sset 'RECMIXL BST1' 'on'
+sudo amixer -c \$AUD_CARD sset 'RECMIXR BST1' 'on'
+sudo amixer -c \$AUD_CARD sset 'Sto1 ADC MIXL ADC1' 'on'
+sudo amixer -c \$AUD_CARD sset 'Sto1 ADC MIXL ADC2' 'on'
+sudo amixer -c \$AUD_CARD sset 'Sto1 ADC MIXR ADC1' 'on'
+sudo amixer -c \$AUD_CARD sset 'Sto1 ADC MIXR ADC2' 'on'
+sudo amixer -c \$AUD_CARD sset 'Sto2 ADC MIXL ADC1' 'on'
+sudo amixer -c \$AUD_CARD sset 'Sto2 ADC MIXL ADC2' 'on'
+sudo amixer -c \$AUD_CARD sset 'Sto2 ADC MIXR ADC1' 'on'
+sudo amixer -c \$AUD_CARD sset 'Sto2 ADC MIXR ADC2' 'on'
+sudo amixer -c \$AUD_CARD sset 'Stereo DAC MIXL DAC L1' 'on'
+sudo amixer -c \$AUD_CARD sset 'Stereo DAC MIXR DAC R1' 'on'
 
-amixer -c \$AUD_CARD sset 'HPOVOL MIXL DAC1' 'on'
-amixer -c \$AUD_CARD sset 'HPOVOL MIXR DAC1' 'on'
-amixer -c \$AUD_CARD sset 'HPO MIX HPVOL' 'on'
-amixer -c \$AUD_CARD sset 'PDM1 L Mux' 'Stereo DAC'
-amixer -c \$AUD_CARD sset 'PDM1 R Mux' 'Stereo DAC'
+sudo amixer -c \$AUD_CARD sset 'HPOVOL MIXL DAC1' 'on'
+sudo amixer -c \$AUD_CARD sset 'HPOVOL MIXR DAC1' 'on'
+sudo amixer -c \$AUD_CARD sset 'HPO MIX HPVOL' 'on'
+sudo amixer -c \$AUD_CARD sset 'PDM1 L Mux' 'Stereo DAC'
+sudo amixer -c \$AUD_CARD sset 'PDM1 R Mux' 'Stereo DAC'
 
 #wifi 6 AP6275S detection and initial bluetooth
 WIFI_VID=\$(cat /sys/class/mmc_host/mmc0/mmc0\:0001/vendor)
