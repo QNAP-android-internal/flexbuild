@@ -29,6 +29,11 @@ sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin
     rm brcm-patchram-plus.c; \
 "
 
+sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin/bash -c " \
+    wget https://raw.githubusercontent.com/QNAP-android-internal/iei-ubuntu-rockchip/bf1bc5443fd7b259e91819a5e632a1d705c61273/overlay/usr/bin/hotspot_script.sh; \
+    mv hotspot_script.sh /usr/bin/hotspot_script.sh; \
+"
+
 bld packrfs -p IMX
 
 mkdir build_ieibsp
