@@ -51,7 +51,9 @@ git clone https://github.com/QNAP-android-internal/kernel_imx.git -b $KERNEL_BRA
 cd uboot-imx
 make ARCH=arm CROSS_COMPILE=$CC "$UBOOT_DEFCONFIG"
 make ARCH=arm CROSS_COMPILE=$CC -j"$CPU_NUM"
+sed -i 's#\./firmware-imx-\${DDR_FW_VER}\.bin ||#./firmware-imx-${DDR_FW_VER}.bin --auto-accept ||#' install_uboot_imx8.sh
 ./install_uboot_imx8.sh -b imx8mp-b643-ppc.dtb
+git checkout install_uboot_imx8.sh
 cd -
 
 cd kernel_imx
