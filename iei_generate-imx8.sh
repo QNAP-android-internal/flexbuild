@@ -108,6 +108,17 @@ sudo cp -rv ../kernel_imx/modules/lib/modules/* lib/modules/
 # added iei firmware files
 sudo cp -rv ../../iei_firmware/imx lib/firmware/
 
+if [ -d "../../iei_firmware/ap6275sdsr" ]; then
+    sudo cp -rv ../../iei_firmware/ap6275sdsr/BCM4362A2_001.003.006.1045.1053.hcd lib/firmware/
+    sudo cp -rv ../../iei_firmware/ap6275sdsr/config.txt lib/firmware/bcmdhd/
+    sudo cp -rv ../../iei_firmware/ap6275sdsr/fw_bcm43752a2_ag_apsta.bin lib/firmware/bcmdhd/
+    sudo cp -rv ../../iei_firmware/ap6275sdsr/fw_bcm43752a2_ag.bin lib/firmware/bcmdhd/
+    sudo cp -rv ../../iei_firmware/ap6275sdsr/nvram_ap6275sdsr.txt lib/firmware/bcmdhd/
+    sudo cp -rv ../../iei_firmware/ap6275sdsr/nvram_ap6275s.txt lib/firmware/bcmdhd/
+else
+    echo "ap6275sdsr firmware does not exist"
+fi
+
 sudo rm -rf opt/imx8-isp/bin/start_isp.sh
 sudo touch opt/imx8-isp/bin/start_isp.sh
 sudo chmod a+x opt/imx8-isp/bin/start_isp.sh
