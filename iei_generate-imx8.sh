@@ -34,6 +34,10 @@ sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin
     mv hotspot_script.sh /usr/bin/hotspot_script.sh; \
 "
 
+sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin/bash -c " \
+    echo "127.0.1.1       imx8mp" >>/etc/hosts \
+"
+
 bld packrfs -p IMX
 
 mkdir build_ieibsp
