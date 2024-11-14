@@ -9,6 +9,7 @@ CC=aarch64-linux-gnu-
 UBOOT_DEFCONFIG=imx8mp_b643_ppc_defconfig
 KERNEL_DEFCONFIG=iei_imx8_defconfig
 CPU_NUM=16
+LATEST_TAG=$(git describe --tags --abbrev=0)
 
 export CROSS_COMPILE=$CC
 
@@ -37,6 +38,9 @@ sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin
 sudo LANG=C chroot build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64  /bin/bash -c " \
     echo "127.0.1.1       imx8mp" >>/etc/hosts \
 "
+
+sudo sh -c 'sed -i '/IEI_RELEASE/d' build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64/etc/os-release'
+printf "IEI_RELEASE=%s\n" "$LATEST_TAG" | sudo tee -a build_lsdk2406/rfs/rootfs_lsdk2406_debian_desktop_arm64/etc/os-release
 
 bld packrfs -p IMX
 
