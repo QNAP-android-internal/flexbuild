@@ -125,6 +125,15 @@ sudo chmod a+x opt/imx8-isp/bin/start_isp.sh
 sudo tee opt/imx8-isp/bin/start_isp.sh << END
 #!/bin/sh
 
+#zram swap setup
+echo "zstd" >/sys/block/zram0/comp_algorithm
+mem_size=\$(free | grep -e "^Mem:" | awk '{print \$2}')
+swap_size=\$(( (\$mem_size)*1024/4))
+echo \$swap_size  > /sys/block/zram0/disksize
+sysctl vm.swappiness=200
+mkswap /dev/zram0
+swapon -p 5 /dev/zram0
+
 sleep 5
 AUD_CARD=\`cat /proc/asound/cards |grep 5672 |grep :|awk  '{print \$1}'\`
 
