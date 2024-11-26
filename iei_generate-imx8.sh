@@ -125,6 +125,32 @@ sudo chmod a+x opt/imx8-isp/bin/start_isp.sh
 sudo tee opt/imx8-isp/bin/start_isp.sh << END
 #!/bin/sh
 
+ROOTFS_SIZE=\$(lsblk | grep mmcblk2p2 | awk '{ print \$4 }')
+if [ "\$ROOTFS_SIZE" = "7.3G" ]; then
+        echo -e '\033[36m\n***********************************'
+        echo 'Resizing storage at first boot.....'
+        echo -e '***********************************\033[0m'
+
+        growpart /dev/mmcblk2 2
+        if [ \$? -eq 0 ]; then
+                resize2fs /dev/mmcblk2p2
+                mount -o remount,ro /
+                sleep 1
+                fsck -y /dev/mmcblk2p2
+                sync
+                mount -o remount,rw /
+                echo -e '\033[36m\n***********************************'
+                echo 'Resizing task completes. Please reboot.....'
+                echo -e '***********************************\033[0m'
+                sleep 5
+                reboot
+        else
+                echo -e '\033[36m\n***********************************'
+                echo 'Resizing task does not complete.'
+                echo -e '***********************************\033[0m'
+        fi
+fi
+
 #zram swap setup
 echo "zstd" >/sys/block/zram0/comp_algorithm
 mem_size=\$(free | grep -e "^Mem:" | awk '{print \$2}')
