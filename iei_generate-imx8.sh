@@ -1,6 +1,6 @@
 #!/bin/bash
 # date:   10/21/2024
-# author: Wig Cheng <wigcheng@ieiworld.com>
+# author: IEI development team <dev@ieiworld.com>
 
 source setup.env
 UBOOT_BRANCH=iei-imx_v2024.04_6.6.23_2.0.0-next
