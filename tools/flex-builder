@@ -54,7 +54,7 @@ EOF
 
 
 check_toolchain() {
-    tc_version='12.x or 13.x or 14.x'
+    tc_version='12.x or 13.x or 14.x or 15.x'
     if [ $DESTARCH = arm32 ] && [ $HOSTARCH = x86_64 -o $HOSTARCH = aarch64 -o $HOSTARCH = i686 ]; then
         [ -f /usr/bin/arm-linux-gnueabihf-gcc ] && gccversion=$(arm-linux-gnueabihf-gcc --version | head -1 | cut -d' ' -f4) || gccversion=0
         if [ $gccversion = 0 ]; then
@@ -396,8 +396,13 @@ check_board_valid() {
 
 check_binfmt_qemu() {
     if grep -q Ubuntu /etc/issue; then
-        [ -f /usr/bin/qemu-aarch64-static ] || \
-        log_mute sudo apt-get install -y binfmt-support qemu-system-common qemu-user-static
+        if [ ! -f /usr/bin/qemu-aarch64-static ]; then
+            if apt-cache show qemu-user-static 2>/dev/null | grep -q "^Package: qemu-user-static$"; then
+                log_mute sudo apt-get install -y binfmt-support qemu-system-common qemu-user-static
+            else
+                log_mute sudo apt-get install -y binfmt-support qemu-system-common qemu-user-binfmt
+            fi
+        fi
     fi
     if ! grep -q binfmt_misc /proc/filesystems; then
         sudo modprobe binfmt_misc
@@ -550,10 +555,11 @@ check_proxy() {
     done
 }
 
-check_debian_version() {
-    if [[ ! -f /etc/os-release ]] || [[ ! `cat /etc/issue | grep -iE '^Debian GNU/Linux 13'` ]]; then
+check_host_distro() {
+    if [[ ! -f /etc/os-release ]] || \
+       [[ ! `cat /etc/issue | grep -iE '^Debian GNU/Linux 13|^Ubuntu Resolute'` ]]; then
         if [ "$FORCE_BUILD_IN_DOCKER" = y -a "$FORCE" != y ]; then
-            fbprint_w "The host is not Debian 13 system, please install docker (refer to docs/FAQ-docker-setup.md) and run 'bld docker' to build in docker" && exit
+            fbprint_w "The host is not Debian 13 or Ubuntu 26.04 (Resolute) system, please install docker (refer to docs/FAQ-docker-setup.md) and run 'bld docker' to build in docker" && exit
         fi
     else
         [ -f /usr/bin/lsb_release ] || log_mute sudo apt-get install -y lsb-release
@@ -596,11 +602,12 @@ check_host_dependent_pkg() {
     # for imx95 m core toolchain
     if [ ! -d /usr/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi/bin ] && [[ "$MACHINE" =~ ^imx(95|94) ]]; then
         if [ ! -f "$FBDIR/dl/arm-toolchain.tar.xz" ]; then
+            mkdir -p $FBDIR/dl
             wget --no-check-certificate --tries=3 --timeout=100 --continue --progress=bar --no-verbose --show-progress \
                 https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz \
-                -O $FBDIR/dl/arm-toolchain.tar.xz
+                -O $FBDIR/dl/arm-toolchain.tar.xz || { fbprint_w "Failed to download ARM toolchain, skipping M-core toolchain install"; rm -f $FBDIR/dl/arm-toolchain.tar.xz; }
         fi
-        sudo tar -xf $FBDIR/dl/arm-toolchain.tar.xz -C /usr
+        [ -f "$FBDIR/dl/arm-toolchain.tar.xz" ] && sudo tar -xf $FBDIR/dl/arm-toolchain.tar.xz -C /usr
     fi
 }
 
@@ -855,7 +862,11 @@ export CONFIGLIST CFGLISTYML
 . $FBDIR/tools/distro_debian
 . $FBDIR/tools/distro_poky
 . $FBDIR/tools/distro_buildroot
-. $FBDIR/configs/debian/extra_packages_list
+if [ "${DISTROTYPE}" = ubuntu ]; then
+    . $FBDIR/configs/ubuntu/extra_packages_list
+else
+    . $FBDIR/configs/debian/extra_packages_list
+fi
 
 [ -z "$MACHINE" ] && MACHINE=all
 [ "${MACHINE:0:7}" = "ls1021a" ] && DESTARCH=arm32
@@ -1045,7 +1056,7 @@ fi
 
 if [ $HOSTARCH = x86_64 -o $HOSTARCH = i686 ] && [ $DISTROTYPE != buildroot ]; then
     if [ `hostname` = fbdebian -a ! -f $FBDIR/logs/.deppkgdonefbdeb ] || [ `hostname` != fbdebian -a ! -f $FBDIR/logs/.deppkgdone ]; then
-        check_debian_version && check_host_dependent_pkg
+        check_host_distro && check_host_dependent_pkg
     fi
 elif [ $HOSTARCH = aarch64 -a ! -f $FBDIR/logs/.deppkgdone ]; then
     check_host_dependent_pkg
@@ -1116,10 +1127,10 @@ case "$1" in
         ;;
     clean)
 		check_board_valid $MACHINE
-        do_clean $@; exit
+        do_clean "$@"; exit
         ;;
     clean-rfs)
-		[ -n ${DISTROVARIANT} -a "$DISTROVARIANT" != base ] && check_board_valid $MACHINE
+		[ -n "${DISTROVARIANT}" ] && [ "$DISTROVARIANT" != base ] && check_board_valid $MACHINE
         do_clean_rfs; exit
         ;;
     clean-bsp)
@@ -1170,7 +1181,7 @@ case "$1" in
         exit
         ;;
     rfs)
-        [ -n ${DISTROVARIANT} -a "$DISTROVARIANT" != base ] && check_board_valid $MACHINE
+        [ -n "${DISTROVARIANT}" ] && [ "$DISTROVARIANT" != base ] && check_board_valid $MACHINE
         generate_distro_rfs; exit
         ;;
     download)
@@ -1180,7 +1191,7 @@ case "$1" in
         convert_rfs_raw_to_ext4; exit
         ;;
     packrfs)
-        [ -n ${DISTROVARIANT} -a "$DISTROVARIANT" != base ] && check_board_valid $MACHINE
+        [ -n "${DISTROVARIANT}" ] && [ "$DISTROVARIANT" != base ] && check_board_valid $MACHINE
         pack_distro_rfs; exit
         ;;
     packapp|packapps)
