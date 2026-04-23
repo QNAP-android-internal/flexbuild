@@ -12,6 +12,10 @@ DEFAULT_REPO_TAG: "lf-6.12.20-2.0.0"
 DEBIAN_CODENAME: "trixie"
 DEBIAN_VERSION:  "13"
 
+# default Ubuntu version for target userland
+UBUNTU_CODENAME: "resolute"
+UBUNTU_VERSION:  "26.04"
+
 # y if git information is needed
 CONFIG_KEEP_GIT: n
 
