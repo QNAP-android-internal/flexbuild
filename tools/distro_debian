@@ -6,11 +6,29 @@
 
 
 build_distro_rfs_debian() {
-    [ $DISTROTYPE = debian ] && [ -f $RFSDIR/etc/buildinfo ] && \
+    [ $DISTROTYPE = debian -o $DISTROTYPE = ubuntu ] && [ -f $RFSDIR/etc/buildinfo ] && \
     log_mute echo "$RFSDIR already exists!" && exit 0
 	rfs_umount "$RFSDIR"
 
     [ `whoami` = root ] && sudopt="" || sudopt=sudo
+
+    # Select distro config directory and scripts based on DISTROTYPE
+    if [ "$DISTROTYPE" = ubuntu ]; then
+        DISTROCFGDIR=$FBDIR/configs/ubuntu
+        BASE_SCRIPT=ubuntu_base_arm64.sh
+        SERVER_SCRIPT=ubuntu_server_arm64.sh
+        POST_SCRIPT=ubuntu_post_config.sh
+        PKG_LIST=$DISTROCFGDIR/extra_packages_list
+    else
+        DISTROCFGDIR=$FBDIR/configs/debian
+        BASE_SCRIPT=debian_base_arm64.sh
+        SERVER_SCRIPT=debian_server_arm64.sh
+        POST_SCRIPT=debian_post_config.sh
+        PKG_LIST=$DISTROCFGDIR/extra_packages_list
+    fi
+
+    # Source the correct package list
+    . "$PKG_LIST"
 
     fbprint_n "Generating rootfs: $RFSDIR"
     cd $FBDIR
@@ -21,8 +39,8 @@ build_distro_rfs_debian() {
 
     if [ -n "$DISTROVARIANT" -a "$DISTROVARIANT" = "base" ]; then
         PKGS=''
-        NEWRFSDIR=$FBOUTDIR/rfs/rootfs_${DISTRIB_VERSION}_debian_base_arm64
-        RFSCMD=$FBDIR/configs/debian/debian_base_arm64.sh
+        NEWRFSDIR=$FBOUTDIR/rfs/rootfs_${DISTRIB_VERSION}_${DISTROTYPE}_base_arm64
+        RFSCMD=$DISTROCFGDIR/$BASE_SCRIPT
     else
 		case "$MACHINE" in
 			   imx8*|imx95*)    PKGS=("${ls_pkgs[@]}" "${imx_pkgs[@]}" "${gnome_pkgs[@]}"); log_mute echo gnome package ;;
@@ -31,7 +49,7 @@ build_distro_rfs_debian() {
 			   *)               PKGS=("${ls_pkgs[@]}" "${imx_pkgs[@]}"); log_mute echo imx package ;;
 		esac
         NEWRFSDIR=$RFSDIR
-        RFSCMD=$FBDIR/configs/debian/debian_server_arm64.sh
+        RFSCMD=$DISTROCFGDIR/$SERVER_SCRIPT
     fi
     [ -f $NEWRFSDIR/etc/buildinfo ] && log_mute echo "$NEWRFSDIR already exists!" && exit 0
 
@@ -76,7 +94,7 @@ build_distro_rfs_debian() {
 		$sudopt bash $RFSCMD "$NEWRFSDIR" "${PKGS[@]}"
 	fi
 
-    $sudopt bash $FBDIR/configs/debian/debian_post_config.sh "$NEWRFSDIR"
+    $sudopt bash $DISTROCFGDIR/$POST_SCRIPT "$NEWRFSDIR"
 
     if [ -z "$DISTROVARIANT" ] || [ "$DISTROVARIANT" != "base" ]; then
         ln -sf /lib/systemd/system/platcfg.service "$NEWRFSDIR"/etc/systemd/system/multi-user.target.wants/platcfg.service
