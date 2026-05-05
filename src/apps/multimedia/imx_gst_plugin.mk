@@ -42,9 +42,11 @@ imx_gst_plugin: $(DEP_GST_PLUGIN) imx_lib libdrm imx_parser gst_plugins_bad imx_
 	 cp -af $(DESTDIR)/usr/lib/libgstpbutils-1.0.so* $(RFSDIR)/usr/lib/ && \
 	 \
 	 $(call fbprint_b,"imx_gst_plugin") && \
+	 python3 -c "import re; f='$(DESTDIR)/usr/include/linux/ipu.h'; t=open(f).read(); t=re.sub(r'#define uint32_t unsigned int\n','',t); t=re.sub(r'#define uint16_t unsigned short\n','',t); t=re.sub(r'#define uint8_t unsigned char\n','',t); t=t.replace('#ifndef __cplusplus\ntypedef unsigned char bool;\n#endif','#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)\ntypedef unsigned char bool;\n#endif'); open(f,'w').write(t)" && \
+	 sed -i 's|#include <termio.h>|#include <termios.h>|' tools/gplay2/gplay2.c && \
 	 rm -rf build_$(DISTROTYPE)_$(ARCH) && \
 	 meson setup build_$(DISTROTYPE)_$(ARCH) \
-	      -Dc_args="-O2 -pipe -g -feliminate-unused-debug-types -Wno-unused-variable -Wno-format -Wno-unused-value \
+	      -Dc_args="-O2 -pipe -g -std=gnu11 -feliminate-unused-debug-types -Wno-unused-variable -Wno-format -Wno-unused-value \
 			-Wno-unused-function -Wno-error=nonnull -Wno-error=implicit-function-declaration -DNO_G2D=1 \
 			-I$(DESTDIR)/usr/include -I$(DESTDIR)/usr/include/gstreamer-1.0" \
 	      -Dc_link_args="-L$(DESTDIR)/usr/lib/gstreamer-1.0 -L$(DESTDIR)/usr/lib -lgsttag-1.0 -lasound " \
