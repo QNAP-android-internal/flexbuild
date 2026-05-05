@@ -28,6 +28,10 @@ imx_vpu_hantro:
 	     h1_encoder/software/linux_reference/ewl/ewl_x280_common.c && \
 	 ln -sf dma-buf.h $(DESTDIR)/usr/include/linux/dma-buf-imx.h && \
 	 sudo cp -rf $(DESTDIR)/usr/include/linux $(RFSDIR)/usr/include/ && \
+	 sed -i 's/ test$$//' Makefile_G1G2 Makefile_H1 && \
+	 sed -i '/cp -P .*LIBG1COMMONNAME/d' Makefile_G1G2 && \
+	 sed -i '/cp .*RELEASE_BIN/d' Makefile_G1G2 && \
+	 sed -i '/cp.*testenc/d' Makefile_H1 && \
 	 DEST_DIR=$(DESTDIR) CROSS_COMPILE=aarch64-linux-gnu- \
 	 PLATFORM=IMX8MM ARCH="-march=armv8-a+crc+crypto" SDKTARGETSYSROOT=$(RFSDIR) \
 	 $(MAKE) all $(LOG_MUTE) && \
