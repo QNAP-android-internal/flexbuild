@@ -16,9 +16,12 @@ mali_imx:
 		mv mali-imx-* mali_imx && rm -f mali_imx.bin; \
 	fi && \
 	cd $(GRAPHICSDIR)/mali_imx && \
-	mkdir -p $(DESTDIR)/etc $(DESTDIR)/usr $(RFSDIR)/usr && \
+	mkdir -p $(DESTDIR)/etc $(DESTDIR)/usr/lib/aarch64-linux-gnu $(RFSDIR)/usr/lib/aarch64-linux-gnu && \
 	cp -af ./etc/* $(DESTDIR)/etc/ && \
-	cp -af ./usr/* $(DESTDIR)/usr/ && \
-	rsync -a ./usr/ $(RFSDIR)/usr/ && \
-	sudo rm -f $(RFSDIR)/usr/lib/aarch64-linux-gnu/{libGLESv2.so,libGLESv2.so.2,libgbm.so.1,libvulkan.so,libvulkan.so.1,libEGL.so,libEGL.so.1} && \
+	cp -af ./usr/lib/*.so* $(DESTDIR)/usr/lib/aarch64-linux-gnu/ && \
+	sudo rm -f $(RFSDIR)/usr/lib/aarch64-linux-gnu/{libGLESv2.so,libGLESv2.so.2,libGLESv2.so.2.1.0,libgbm.so,libgbm.so.1,libgbm.so.1.0.0,libvulkan.so,libvulkan.so.1,libEGL.so,libEGL.so.1,libEGL.so.1.1.0,libEGL_mesa.so.0,libEGL_mesa.so.0.0.0} && \
+	sudo cp -af ./usr/lib/*.so* $(RFSDIR)/usr/lib/aarch64-linux-gnu/ && \
+	sudo ln -sf libgbm.so.1.0.0 $(RFSDIR)/usr/lib/aarch64-linux-gnu/libgbm.so && \
+	sudo ln -sf libEGL.so.1.5.0 $(RFSDIR)/usr/lib/aarch64-linux-gnu/libEGL.so && \
+	sudo ln -sf libGLESv2.so.2.1.0 $(RFSDIR)/usr/lib/aarch64-linux-gnu/libGLESv2.so && \
 	$(call fbprint_d,"mali_imx")
