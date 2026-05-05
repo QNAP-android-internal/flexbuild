@@ -1,0 +1,46 @@
+From: Flexbuild <flexbuild@nxp.com>
+Subject: [PATCH] gst: add gst_state_get_name alias for GStreamer 1.28 ABI compat
+
+GStreamer 1.28 added gst_state_get_name() as a shorter alias for the
+long-standing gst_element_state_get_name(). Debian 13's libgstplay-1.0
+is built against GStreamer 1.28 and requires this symbol at runtime.
+Add the alias to the 1.26 NXP fork so that Debian gst-plugins-bad 1.28
+libraries resolve the symbol against this GStreamer 1.26 core.
+
+Signed-off-by: Flexbuild <flexbuild@nxp.com>
+---
+ gst/gstutils.c | 7 +++++++
+ gst/gstutils.h | 3 +++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/gst/gstutils.c b/gst/gstutils.c
+--- a/gst/gstutils.c
++++ b/gst/gstutils.c
+@@ -1300,7 +1300,14 @@
+       return g_strdup_printf ("UNKNOWN!(%d)", state);
+   }
+ }
+
++/* Alias added for GStreamer 1.28 API compatibility */
++const gchar *
++gst_state_get_name (GstState state)
++{
++  return gst_element_state_get_name (state);
++}
++
+ /**
+  * gst_element_state_change_return_get_name:
+  * @state_ret: a #GstStateChangeReturn to get the name of.
+diff --git a/gst/gstutils.h b/gst/gstutils.h
+--- a/gst/gstutils.h
++++ b/gst/gstutils.h
+@@ -992,6 +992,9 @@
+ GST_API
+ const gchar*            gst_element_state_get_name      (GstState state);
+
++GST_API
++const gchar*            gst_state_get_name              (GstState state);
++
+ GST_API
+ const gchar *           gst_element_state_change_return_get_name (GstStateChangeReturn state_ret);
+

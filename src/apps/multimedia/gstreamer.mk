@@ -28,6 +28,9 @@ gstreamer:
 	     -e 's%@DESTDIR@%$(DESTDIR)%g' $(FBDIR)/src/system/meson.cross > meson.cross && \
 	 \
 	 rm -rf build_$(DISTROTYPE)_$(ARCH) && \
+	 export PKG_CONFIG_LIBDIR=$(RFSDIR)/usr/lib/aarch64-linux-gnu/pkgconfig:$(RFSDIR)/usr/share/pkgconfig && \
+	 export PKG_CONFIG_SYSROOT_DIR=$(RFSDIR) && \
+	 export PKG_CONFIG_PATH="" && \
 	 meson setup build_$(DISTROTYPE)_$(ARCH) \
 		--cross-file meson.cross \
 		-Dc_args="--sysroot=$(RFSDIR) -I$(DESTDIR)/usr/local/include" \
@@ -48,4 +51,6 @@ gstreamer:
 		-Dtracer_hooks=true \
 		-Dlibunwind=disabled $(LOG_MUTE) && \
 	 ninja -j$(JOBS) -C build_$(DISTROTYPE)_$(ARCH) install $(LOG_MUTE) && \
+	 nxp_gst=$$(readlink $(DESTDIR)/usr/lib/libgstreamer-1.0.so.0) && \
+	 sudo find $(DESTDIR)/usr/lib/ -maxdepth 1 -name "libgstreamer-1.0.so.0.*" ! -name "$$nxp_gst" -delete && \
 	 $(call fbprint_d,"gstreamer")
