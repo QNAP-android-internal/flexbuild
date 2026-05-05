@@ -84,4 +84,6 @@ gst_plugins_base: $(DEP_GSTBASE) libdrm gstreamer alsa_lib wayland_protocols
 	 cp -af $(DESTDIR)/usr/lib/libgstvideo-1.0.so* $(RFSDIR)/usr/lib/ && \
 	 cp -af $(DESTDIR)/usr/lib/libgstpbutils-1.0.so* $(RFSDIR)/usr/lib/ && \
 	 cp -af $(DESTDIR)/usr/lib/libgstaudio-1.0.so* $(RFSDIR)/usr/lib/ && \
+	 cp -af $(DESTDIR)/usr/lib/libgsttag-1.0.so* $(RFSDIR)/usr/lib/ && \
+	 cp -af $(DESTDIR)/usr/lib/libgstallocators-1.0.so* $(RFSDIR)/usr/lib/ && \
 	 $(call fbprint_d,"gst_plugins_base")
