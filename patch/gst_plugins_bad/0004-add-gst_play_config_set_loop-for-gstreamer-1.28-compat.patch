@@ -1,0 +1,80 @@
+From: Wig Cheng <onlywig@gmail.com>
+Subject: [PATCH] gstplay: add gst_play_config_{set,get}_loop for GStreamer 1.28 compat
+
+GTK4 (>=4.14) calls gst_play_config_set_loop() which was added in
+GStreamer 1.28.  NXP's 1.26 fork does not have it.  Add stub
+implementations that store/retrieve a "loop" boolean in the config
+GstStructure, matching the upstream 1.28 semantics.
+
+Signed-off-by: Wig Cheng <onlywig@gmail.com>
+---
+ gst-libs/gst/play/gstplay.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ gst-libs/gst/play/gstplay.h |  6 ++++++
+ 2 files changed, 46 insertions(+)
+
+diff --git a/gst-libs/gst/play/gstplay.c b/gst-libs/gst/play/gstplay.c
+--- a/gst-libs/gst/play/gstplay.c
++++ b/gst-libs/gst/play/gstplay.c
+@@ -4776,6 +4776,46 @@
+ }
+
+ /**
++ * gst_play_config_set_loop:
++ * @config: a #GstPlay configuration
++ * @loop: %TRUE to loop, %FALSE to play once
++ *
++ * Enable or disable looping. When enabled, the play will loop
++ * indefinitely when end of stream is reached.
++ *
++ * Looping is disabled by default.
++ *
++ * Since: 1.28
++ */
++void
++gst_play_config_set_loop (GstStructure * config, gboolean loop)
++{
++  g_return_if_fail (config != NULL);
++
++  gst_structure_set (config, "loop", G_TYPE_BOOLEAN, loop, NULL);
++}
++
++/**
++ * gst_play_config_get_loop:
++ * @config: a #GstPlay configuration
++ *
++ * Returns: %TRUE if looping is enabled
++ *
++ * Since: 1.28
++ */
++gboolean
++gst_play_config_get_loop (const GstStructure * config)
++{
++  gboolean loop = FALSE;
++
++  g_return_val_if_fail (config != NULL, FALSE);
++
++  gst_structure_get (config, "loop", G_TYPE_BOOLEAN, &loop, NULL);
++
++  return loop;
++}
++
++/**
+  * gst_play_get_video_snapshot:
+  * @play: #GstPlay instance
+  * @format: output format of the video snapshot
+diff --git a/gst-libs/gst/play/gstplay.h b/gst-libs/gst/play/gstplay.h
+--- a/gst-libs/gst/play/gstplay.h
++++ b/gst-libs/gst/play/gstplay.h
+@@ -430,6 +430,12 @@
+ GST_PLAY_API
+ gboolean       gst_play_config_get_pipeline_dump_in_error_details (const GstStructure * config);
+
++GST_PLAY_API
++void           gst_play_config_set_loop (GstStructure * config, gboolean loop);
++
++GST_PLAY_API
++gboolean       gst_play_config_get_loop (const GstStructure * config);
++
+ /**
+  * GstPlaySnapshotFormat:
+  * @GST_PLAY_THUMBNAIL_RAW_NATIVE: raw native format.

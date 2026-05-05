@@ -49,6 +49,7 @@ gst_plugins_bad: gst_plugins_base
 		--strip \
 		-Dintrospection=disabled \
 		-Dexamples=disabled \
+		-Dtests=disabled \
 		-Dnls=enabled \
 		-Dgpl=disabled \
 		-Ddoc=disabled \
@@ -159,4 +160,11 @@ gst_plugins_bad: gst_plugins_base
 		-Dx265=disabled \
 		-Dzbar=disabled $(LOG_MUTE) && \
 	ninja -j $(JOBS) -C build_$(DISTROTYPE)_$(ARCH) install $(LOG_MUTE) && \
+	nxp_gst=$$(readlink $(DESTDIR)/usr/lib/libgstreamer-1.0.so.0) && \
+	sudo find $(DESTDIR)/usr/lib/ -maxdepth 1 -name "libgstreamer-1.0.so.0.*" ! -name "$$nxp_gst" -delete && \
+	sudo find $(RFSDIR)/usr/lib/ -maxdepth 1 -name "libgst*.so.0.28*" -delete && \
+	sudo cp -af $(DESTDIR)/usr/lib/libgstplay-1.0.so* $(RFSDIR)/usr/lib/ && \
+	sudo cp -af $(DESTDIR)/usr/lib/libgstplayer-1.0.so* $(RFSDIR)/usr/lib/ && \
+	sudo cp -af $(DESTDIR)/usr/lib/libgstbadaudio-1.0.so* $(RFSDIR)/usr/lib/ && \
+	sudo cp -af $(DESTDIR)/usr/lib/libgstcodecs-1.0.so* $(RFSDIR)/usr/lib/ && \
 	$(call fbprint_d,"gst_plugins_bad")
