@@ -23,7 +23,7 @@ libdrm:
 		-Dfreedreno=enabled \
 		-Dfreedreno-kgsl=false \
 		-Dinstall-test-programs=true \
-		-Dintel=enabled \
+		-Dintel=disabled \
 		-Dman-pages=disabled \
 		-Dnouveau=enabled \
 		-Domap=enabled \
@@ -34,7 +34,7 @@ libdrm:
 		-Dvalgrind=disabled \
 		-Dvc4=enabled \
 		-Dvivante=true \
-		-Dvmwgfx=enabled \
+		-Dvmwgfx=disabled \
 		-Dc_link_args="-pthread" $(LOG_MUTE) && \
 	 PYTHONNOUSERSITE=y DESTDIR=$(DESTDIR) \
 	 ninja -j$(JOBS) install -C build_$(DISTROTYPE)_$(ARCH) $(LOG_MUTE) && \
