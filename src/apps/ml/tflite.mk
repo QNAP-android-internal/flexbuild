@@ -43,6 +43,38 @@ tflite: flatbuffers
 		-DFETCHCONTENT_BASE_DIR="$(MLDIR)/tflite/build_$(DISTROTYPE)_$(ARCH)/_deps" \
 		-DCMAKE_POLICY_DEFAULT_CMP0169=OLD \
 		-DCMAKE_POLICY_DEFAULT_CMP0177=OLD \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+		-DCMAKE_BUILD_TYPE=release \
+		-DCMAKE_SYSTEM_NAME=Linux \
+		-DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+		-DTFLITE_ENABLE_FLATBUFFERS=ON \
+		-DTFLITE_HOST_TOOLS_DIR=/usr/bin \
+		-DFETCHCONTENT_FULLY_DISCONNECTED=OFF \
+		-DTFLITE_EVAL_TOOLS=on \
+		-DTFLITE_BUILD_SHARED_LIB=on \
+		-DTFLITE_ENABLE_NNAPI=off \
+		-DTFLITE_ENABLE_NNAPI_VERBOSE_VALIDATION=on \
+		-DTFLITE_ENABLE_RUY=on \
+		-DTFLITE_ENABLE_XNNPACK=on \
+		-DTFLITE_PYTHON_WRAPPER_BUILD_CMAKE2=on \
+		-DTFLITE_ENABLE_EXTERNAL_DELEGATE=on $(LOG_MUTE) ; \
+	 find build_$(DISTROTYPE)_$(ARCH) -name "CMakeLists.txt" | \
+		xargs sed -i 's/cmake_minimum_required(VERSION [0-2]\.[0-9][^)]*)/cmake_minimum_required(VERSION 3.5)/gI' && \
+	 find build_$(DISTROTYPE)_$(ARCH) \( -name "Download*.cmake" -o -name "download*.cmake" \) | \
+		xargs sed -i 's/CMAKE_MINIMUM_REQUIRED(VERSION [0-2]\.[0-9][^)]*)/CMAKE_MINIMUM_REQUIRED(VERSION 3.5)/gI' && \
+	 git config --global --add safe.directory '*' ; \
+	 if [ ! -d "build_$(DISTROTYPE)_$(ARCH)/psimd-source" ] && [ -d "build_$(DISTROTYPE)_$(ARCH)/psimd-download" ]; then \
+		cmake -S build_$(DISTROTYPE)_$(ARCH)/psimd-download \
+			-B build_$(DISTROTYPE)_$(ARCH)/psimd-download \
+			-DCMAKE_POLICY_VERSION_MINIMUM=3.5 && \
+		cmake --build build_$(DISTROTYPE)_$(ARCH)/psimd-download ; \
+	 fi && \
+	 cmake  -S tensorflow/lite \
+		-B build_$(DISTROTYPE)_$(ARCH) \
+		-DFETCHCONTENT_BASE_DIR="$(MLDIR)/tflite/build_$(DISTROTYPE)_$(ARCH)/_deps" \
+		-DCMAKE_POLICY_DEFAULT_CMP0169=OLD \
+		-DCMAKE_POLICY_DEFAULT_CMP0177=OLD \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 		-DCMAKE_BUILD_TYPE=release \
 		-DCMAKE_SYSTEM_NAME=Linux \
 		-DCMAKE_SYSTEM_PROCESSOR=aarch64 \
