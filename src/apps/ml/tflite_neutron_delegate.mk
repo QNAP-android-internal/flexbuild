@@ -4,7 +4,7 @@
 
 # DEPEND: tensorflow-lite neutron
 
-TFLITE_BUILD_DIR = "$(MLDIR)"/tflite/build_debian_arm64
+TFLITE_BUILD_DIR = "$(MLDIR)"/tflite/build_$(DISTROTYPE)_$(ARCH)
 
 #tflite_neutron_delegate:
 tflite_neutron_delegate: tflite neutron
@@ -47,6 +47,7 @@ tflite_neutron_delegate: tflite neutron
 		-DFETCHCONTENT_SOURCE_DIR_CPUINFO=$(TFLITE_BUILD_DIR)/cpuinfo \
 		-DFETCHCONTENT_SOURCE_DIR_EIGEN=$(TFLITE_BUILD_DIR)/eigen \
 		-Wno-dev -DCMAKE_POLICY_DEFAULT_CMP0169=OLD \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 		-DCMAKE_SYSTEM_NAME=Linux \
 		-DTFLITE_HOST_TOOLS_DIR="/usr" \
 		-DCMAKE_SYSTEM_PROCESSOR=aarch64 \
@@ -58,7 +59,7 @@ tflite_neutron_delegate: tflite neutron
 		-DFETCHCONTENT_SOURCE_DIR_TENSORFLOW=$(MLDIR)/tflite \
 		-DTENSORFLOW_SOURCE_DIR=$(MLDIR)/tflite \
 		-DTFLITE_LIB_LOC=$(DESTDIR)/usr/lib/libtensorflow-lite.so \
-		-DPython_EXECUTABLE=$(RFSDIR)/usr/bin/python3.13 \
+		-DPython_EXECUTABLE=$(RFSDIR)/usr/bin/python3.14 \
 		-DCMAKE_EXE_LINKER_FLAGS="-L$(DESTDIR)/usr/lib" $(LOG_MUTE) && \
 	 $(MAKE) -j$(JOBS) -C build_$(DISTROTYPE)_$(ARCH) $(LOG_MUTE) && \
 	 rm -f /lib/ld-linux-aarch64.so.1 && \
