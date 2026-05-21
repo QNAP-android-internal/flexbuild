@@ -34,6 +34,7 @@ imx_vpu_hantro:
 	 sed -i '/cp.*testenc/d' Makefile_H1 && \
 	 DEST_DIR=$(DESTDIR) CROSS_COMPILE=aarch64-linux-gnu- \
 	 PLATFORM=IMX8MM ARCH="-march=armv8-a+crc+crypto" SDKTARGETSYSROOT=$(RFSDIR) \
+	 CFLAGS="-O2 -std=gnu17" \
 	 $(MAKE) all $(LOG_MUTE) && \
 	 $(MAKE) install PLATFORM=IMX8MM DEST_DIR=$(DESTDIR) libdir=/usr/lib $(LOG_MUTE) && \
 	 $(call fbprint_d,"imx_vpu_hantro")
