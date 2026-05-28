@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000002 Mon Sep 17 00:00:00 2001
+From: Wig Cheng <wigcheng@ieiworld.com>
+Date: Sun, 18 May 2026 17:31:00 +0800
+Subject: [PATCH] transpose optimizer: include <cstdint> for uint8_t
+
+GCC 15 in ubuntu 26.04 no longer transitively includes <cstdint>
+through <vector> / <string>. optimizer_api.h uses uint8_t but does
+not include the proper header, causing:
+
+    error: 'uint8_t' was not declared in this scope
+
+Add the missing include explicitly.
+
+Signed-off-by: Wig Cheng <wigcheng@ieiworld.com>
+---
+ onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h b/onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h
+--- a/onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h
++++ b/onnxruntime/core/optimizer/transpose_optimization/optimizer_api.h
+@@ -10,6 +10,7 @@
+ #include <unordered_map>
+ #include <unordered_set>
+ #include <vector>
++#include <cstdint>
+
+ namespace onnx_transpose_optimization {
+
+--
+2.45.0

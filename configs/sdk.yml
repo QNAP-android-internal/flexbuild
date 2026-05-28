@@ -544,9 +544,15 @@ repo:
 
   neutron:
     url:  https://github.com/nxp-imx/neutron.git
+    ver:  lf-6.12.34_2.1.0
 
   tflite_neutron_delegate:
     url:  https://github.com/nxp-imx/tflite-neutron-delegate.git
+    ver:  lf-6.12.34_2.1.0
+
+  onnxruntime:
+    url:  https://github.com/nxp-imx/onnxruntime-imx.git
+    ver:  lf-6.12.34_2.1.0
 
 
 # NXP GoPoint Demo Experience components

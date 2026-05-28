@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000001 Mon Sep 17 00:00:00 2001
+From: Wig Cheng <wigcheng@ieiworld.com>
+Date: Sun, 18 May 2026 17:30:00 +0800
+Subject: [PATCH] graph: link nlohmann_json when USE_NEUTRON=ON
+
+NXP's neutron_defs.cc (added when onnxruntime_USE_NEUTRON=ON) does
+
+    #include "nlohmann/json.hpp"
+
+unconditionally, but onnxruntime_graph.cmake only adds the
+nlohmann_json::nlohmann_json link target inside the
+`if (onnxruntime_ENABLE_TRAINING)` guard. Without training enabled
+the build fails with:
+
+    fatal error: nlohmann/json.hpp: No such file or directory
+
+Move the link out of the training guard and gate it on either training
+or USE_NEUTRON.
+
+Signed-off-by: Wig Cheng <wigcheng@ieiworld.com>
+---
+ cmake/onnxruntime_graph.cmake | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/cmake/onnxruntime_graph.cmake b/cmake/onnxruntime_graph.cmake
+--- a/cmake/onnxruntime_graph.cmake
++++ b/cmake/onnxruntime_graph.cmake
+@@ -121,5 +121,9 @@
+ if (onnxruntime_ENABLE_TRAINING)
+   #TODO: the graph library should focus on ONNX IR, it shouldn't depend on math libraries like MKLML/OpenBlas
+   target_include_directories(onnxruntime_graph PRIVATE ${MKLML_INCLUDE_DIR})
++endif()
++# NXP neutron_defs.cc unconditionally #includes "nlohmann/json.hpp" when
++# USE_NEUTRON=ON, so link the header library outside the training guard.
++if (onnxruntime_ENABLE_TRAINING OR onnxruntime_USE_NEUTRON)
+   target_link_libraries(onnxruntime_graph PRIVATE nlohmann_json::nlohmann_json)
+ endif()
+--
+2.45.0
