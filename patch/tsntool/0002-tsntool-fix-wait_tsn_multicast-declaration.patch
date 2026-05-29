@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000002 Mon Sep 17 00:00:00 2001
+From: Wig Cheng <wigcheng@ieiworld.com>
+Date: Wed, 20 May 2026 14:00:00 +0800
+Subject: [PATCH] tsntool: fix conflicting declaration of wait_tsn_multicast
+
+The header declares wait_tsn_multicast() with an empty parameter list,
+while its definition in multicast.c takes a struct alarm_info * argument.
+
+GCC 15 in Ubuntu 26.04 defaults to -std=gnu23, under which the empty
+() in a function declaration is interpreted as (void) rather than the
+pre-C23 "unspecified parameters" meaning. The build then fails with a
+conflicting-types error between the declaration and the definition.
+
+Forward-declare struct alarm_info and update the prototype to match
+the actual signature used in the implementation.
+
+Upstream-Status: Pending
+Signed-off-by: Wig Cheng <wigcheng@ieiworld.com>
+---
+ include/tsn/genl_tsn.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/include/tsn/genl_tsn.h b/include/tsn/genl_tsn.h
+--- a/include/tsn/genl_tsn.h
++++ b/include/tsn/genl_tsn.h
+@@ -457,6 +457,7 @@ pthread_t *create_alarm_common(uint64_t ts, uint32_t offset, uint32_t cycle,
+ 			      void (*callback_func)(void *data), void *data);
+ int delete_alarm_common(pthread_t *thread);
+-int wait_tsn_multicast();
++struct alarm_info;
++int wait_tsn_multicast(struct alarm_info *ainfo);
+ void get_para_from_json(int type, cJSON *json, void *para);
+
+ bool get_conf_monitor_status(void);
+-- 
+2.45.0
