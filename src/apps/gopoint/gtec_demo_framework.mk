@@ -36,12 +36,34 @@ gtec_demo_framework: $(DEP_GTEC)
 	 # FslBuild.py -vvvvv -c install --BuildThreads $(JOBS) --CMakeInstallPrefix . && \
 	 # --UseFeatures [$${FEATURES}] --UseExtensions [$${EXTENSIONS}] --Variants [WindowSystem=$${WINDOW_SYSTEM}] && \
 	 \
+	 CONDFILE=$(GPDIR)/gtec_demo_framework/.Config/FslBuildGen/BuildContent/ConditionInterpreter.py && \
+	 chmod u+w $$CONDFILE && \
+	 sed -i \
+	   -e 's/val = ast\.Num(1 if featureInList else 0)/val = ast.Constant(1 if featureInList else 0)/' \
+	   -e '/isinstance(node, ast\.NameConstant) or/d' \
+	   -e '/isinstance(node, ast\.Str) or/d' \
+	   $$CONDFILE && \
+	 TASKS_PY=$(GPDIR)/gtec_demo_framework/.Config/FslBuildGen/BuildExternal/Tasks.py && \
+	 chmod u+w $$TASKS_PY && \
+	 python3 -c "\
+f='$$TASKS_PY'; t=open(f).read(); \
+old=\"buildCommand = [self.CMakeConfig.CMakeCommand, '-G', self.CMakeConfig.CMakeFinalGeneratorName, defineCMakeInstallPrefix, sourcePath]\"; \
+new=\"buildCommand = [self.CMakeConfig.CMakeCommand, '-G', self.CMakeConfig.CMakeFinalGeneratorName, defineCMakeInstallPrefix, '-DCMAKE_POLICY_VERSION_MINIMUM=3.5', sourcePath]\"; \
+open(f,'w').write(t.replace(old,new) if old in t else t)" && \
+	 GLI_CMAKE=$(GPDIR)/gtec_demo_framework/.Thirdparty/.DownloadCache/gli-0.8.3.1/CMakeLists.txt && \
+	 if [ -f $$GLI_CMAKE ]; then \
+	   chmod u+w $$GLI_CMAKE && \
+	   sed -i 's/cmake_minimum_required(VERSION 3\.1/cmake_minimum_required(VERSION 3.5/' $$GLI_CMAKE; \
+	 fi && \
+	 \
 	 # Compiling GLES2 DemoApp && \
 	 for demoapp in Bloom Blur EightLayerBlend FractalShader LineBuilder101 ModelLoaderBasics S03_Transform S04_Projection S06_Texturing S07_EnvMapping S08_EnvMappingRefraction ; do \
-		cd $(GPDIR)/gtec_demo_framework/DemoApps/GLES2/$${demoapp}; \
-		FslBuild.py --BuildThreads $(JOBS) --platform yocto --Variants [config=Release,FSL_GLES_NAME=vivante,WindowSystem=Wayland] --UseExtensions [$(EXT_GTEC)] --UseFeatures [$${FEATURES}] $(LOG_MUTE) ; \
-		mkdir -p $(DESTDIR)/opt/imx-gpu-sdk/GLES2/$${demoapp}___Wayland/Content; \
-		cp -arf $(GPNT_GPU_SOURDIR)/$${demoapp}___Wayland/Content/* $(DESTDIR)/$(GPNT_GPU_DESTDIR)/$${demoapp}___Wayland/Content/; \
+		cd $(GPDIR)/gtec_demo_framework/DemoApps/GLES2/$${demoapp} && \
+		FslBuild.py --BuildThreads $(JOBS) --platform yocto --Variants [config=Release,FSL_GLES_NAME=vivante,WindowSystem=Wayland] --UseExtensions [$(EXT_GTEC)] --UseFeatures [$${FEATURES}] && \
+		mkdir -p $(DESTDIR)/opt/imx-gpu-sdk/GLES2/$${demoapp}___Wayland/Content && \
+		{ [ -d $(GPNT_GPU_SOURDIR)/$${demoapp}___Wayland/Content ] && \
+		  ls $(GPNT_GPU_SOURDIR)/$${demoapp}___Wayland/Content/ | grep -q . && \
+		  cp -arf $(GPNT_GPU_SOURDIR)/$${demoapp}___Wayland/Content/. $(DESTDIR)/$(GPNT_GPU_DESTDIR)/$${demoapp}___Wayland/Content/ || true; } && \
 		cp -arf $(GPNT_GPU_SOURDIR)/$${demoapp}___Wayland/GLES2.$${demoapp}___Wayland $(DESTDIR)/$(GPNT_GPU_DESTDIR)/$${demoapp}___Wayland/; \
 	 done && \
 	 \
