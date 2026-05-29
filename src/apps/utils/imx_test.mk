@@ -17,8 +17,12 @@ imx_test: libdrm alsa_lib
 	 sudo cp -rf $(DESTDIR)/usr/include/alsa $(RFSDIR)/usr/include && \
 	 $(call fbprint_b,"imx_test") && \
 	 cd $(UTILSDIR)/imx_test && \
+	 git config --global --add safe.directory $(UTILSDIR)/imx_test && \
+	 git config --global --add safe.directory '*' && \
+	 find . -name "*.c" -exec sed -i 's/#include <termio.h>/#include <termios.h>/' {} \; && \
+	 sed -i 's/#include <termios.h>/#include <termios.h>\n#include <sys\/ioctl.h>/' test/mxc_uart_test/mxc_uart_xmit_test.c && \
 	 mkdir -p $(DESTDIR)/opt/unit_tests && \
-	 export CC="$(CROSS_COMPILE)gcc --sysroot=$(RFSDIR) -I$(RFSDIR)/usr/include -I$(DESTDIR)/usr/include -O2 -pipe -g" && \
+	 export CC="$(CROSS_COMPILE)gcc --sysroot=$(RFSDIR) -I$(RFSDIR)/usr/include -I$(DESTDIR)/usr/include -O2 -pipe -g -std=gnu11" && \
 	 V=0 VERBOSE='' SDKTARGETSYSROOT=$(DESTDIR) PLATFORM=$(PLATFORM) \
 	 $(MAKE) -j$(JOBS) $(LOG_MUTE) && \
 	 $(MAKE) install DESTDIR=$(DESTDIR)/opt/unit_tests PLATFORM=$(PLATFORM) $(LOG_MUTE) && \
