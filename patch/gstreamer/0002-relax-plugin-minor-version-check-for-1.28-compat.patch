@@ -1,0 +1,46 @@
+From: Wig Cheng <wigcheng@ieiworld.com>
+Date: Tue, 20 May 2026 08:00:00 +0800
+Subject: [PATCH] plugin: relax minor-version check to allow newer-minor plugins
+
+NXP keeps the GStreamer core at 1.26 because the imx hardware
+acceleration patches are written against the 1.26 API. Ubuntu 26.04
+ships gst-plugins-{base,bad,good} at 1.28 via apt, and patch 0001 in
+this directory adds the missing symbols (gst_state_get_name, etc.) so
+1.28 plugins can resolve their imports against the 1.26 libgstreamer.
+
+What was missing: gst_plugin_check_version() rejects plugin metadata
+with minor > current minor (1.28 plugin on 1.26 core), so plugins are
+never even loaded — they fail with
+
+  plugin "..." has incompatible version (plugin: 1.28, gst: 1.26), not loading
+
+and `gst-inspect-1.0 glimagesink` reports "no such element". Relax the
+check to compare only the major version. The runtime alias patches
+provide the actual API surface; the strict minor check was the only
+thing blocking the mix.
+
+Signed-off-by: Wig Cheng <wigcheng@ieiworld.com>
+---
+ gst/gstplugin.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/gst/gstplugin.c b/gst/gstplugin.c
+--- a/gst/gstplugin.c
++++ b/gst/gstplugin.c
+@@ -486,9 +486,11 @@
+ static gboolean
+ gst_plugin_check_version (gint major, gint minor)
+ {
+-  /* return NULL if the major and minor version numbers are not compatible */
+-  /* with ours. */
+-  if (major != GST_VERSION_MAJOR || minor > GST_VERSION_MINOR)
++  /* Major-only check: NXP keeps the 1.26 core for hw-accel plugins but the
++   * Ubuntu 26.04 rootfs ships 1.28 plugins via apt. Patch 0001 in this
++   * directory adds the missing 1.28 ABI surface so the mix works at runtime.
++   */
++  if (major != GST_VERSION_MAJOR)
+     return FALSE;
+
+   return TRUE;
+--
+2.45.0
