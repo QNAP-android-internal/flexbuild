@@ -12,7 +12,7 @@ nnstreamer: gst_plugins_base tflite nnstreamer_edge
 	 $(call download_repo,nnstreamer,apps/ml) && \
 	 $(call patch_apply,nnstreamer,apps/ml) && \
 	 cd $(MLDIR)/nnstreamer && \
-	 rm -rf build_debian_arm64 && \
+	 rm -rf build_debian_arm64 build_ubuntu_arm64 && \
 	 mkdir -p $(DESTDIR)/usr/lib/pkgconfig && \
 	 sed -e 's%@TARGET_CROSS@%$(CROSS_COMPILE)%g' -e 's%@STAGING_DIR@%$(RFSDIR)%g' \
 	     -e 's%@DESTDIR@%$(DESTDIR)%g' $(FBDIR)/src/system/meson.cross > meson.cross && \
@@ -30,7 +30,7 @@ nnstreamer: gst_plugins_base tflite nnstreamer_edge
 		-Dcpp_args="-I$(DESTDIR)/usr/include -I$(RFSDIR)/usr/include \
 				-I$(RFSDIR)/usr/lib/aarch64-linux-gnu/python3-numpy/numpy/_core/include \
 				-I$(MLDIR)/tvm/3rdparty/dmlc-core/include \
-			    -I$(MLDIR)/tflite/build_debian_arm64/abseil-cpp -I$(MLDIR)/tflite \
+			-I$(MLDIR)/tflite/build_$(DISTROTYPE)_$(ARCH)/abseil-cpp -I$(MLDIR)/tflite \
 			    -Wno-error=comment -Wno-sign-compare -Wno-error=unused-parameter -Wno-error=redundant-decls" \
 		-Dc_link_args="-L$(DESTDIR)/usr/lib -L$(RFSDIR)/usr/lib/aarch64-linux-gnu" \
 		-Dcpp_link_args="-L$(DESTDIR)/usr/lib -L$(RFSDIR)/usr/lib/aarch64-linux-gnu" \
