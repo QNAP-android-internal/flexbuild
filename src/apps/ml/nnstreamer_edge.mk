@@ -20,8 +20,11 @@ nnstreamer_edge:
          export PKG_CONFIG_LIBDIR=$(RFSDIR)/usr/lib/aarch64-linux-gnu/pkgconfig && \
          export PKG_CONFIG_PATH=$(RFSDIR)/usr/share/pkgconfig && \
 	 mkdir -p build_$(DISTROTYPE)_$(ARCH) && \
+	 sed -i 's/cmake_minimum_required(VERSION [0-2]\.[0-9][^)]*)/cmake_minimum_required(VERSION 3.5)/gI' $(MLDIR)/nnstreamer_edge/CMakeLists.txt && \
 	 cmake  -S $(MLDIR)/nnstreamer_edge \
 		-B build_$(DISTROTYPE)_$(ARCH) \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+		-DCMAKE_C_FLAGS="-Wno-error=discarded-qualifiers" \
 		-DCMAKE_BUILD_TYPE=release \
 		-DENABLE_TEST=OFF $(LOG_MUTE) && \
 	 cmake --build build_$(DISTROTYPE)_$(ARCH) -j$(JOBS) --target all $(LOG_MUTE) && \
