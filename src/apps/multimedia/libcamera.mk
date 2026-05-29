@@ -26,7 +26,7 @@ libcamera: gstreamer gst_plugins_base $(DEP_LIBCAM)
 	 export PATH=/usr/lib/qt6/libexec:$(PATH) && \
 	 install -m 644 $(DESTDIR)/usr/lib/libgstbase-1.0* $(RFSDIR)/usr/lib/ && \
 	 install -m 644 $(DESTDIR)/usr/lib/libgstallocators-1.0* $(RFSDIR)/usr/lib/ && \
-	 install -m 644 $(DESTDIR)/usr/lib/libEGL.so.* $(RFSDIR)/usr/lib/ && \
+	 install -m 644 $(DESTDIR)/usr/lib/aarch64-linux-gnu/libEGL.so.* $(RFSDIR)/usr/lib/aarch64-linux-gnu/ && \
 	 if [ $${MACHINE:0:4} = imx8 ]; then \
 		install -m 644 $(DESTDIR)/usr/lib/libGAL.so* $(RFSDIR)/usr/lib/; \
 		install -m 644 $(DESTDIR)/usr/lib/libdrm.so* $(RFSDIR)/usr/lib/; \
@@ -48,6 +48,23 @@ libcamera: gstreamer gst_plugins_base $(DEP_LIBCAM)
 		-Dtest=false \
 		-Ddocumentation=disabled \
 		-Dgstreamer=enabled \
-		-Dpycamera=enabled $(LOG_MUTE) && \
+		-Dpycamera=enabled $(LOG_MUTE); \
+	 if [ -f subprojects/libyaml/CMakeLists.txt ]; then \
+		sed -i 's/cmake_minimum_required([^)]*)/cmake_minimum_required(VERSION 3.10)/g' subprojects/libyaml/CMakeLists.txt; \
+		meson setup --wipe build \
+			--prefix=/usr --buildtype=release \
+			--cross-file meson.cross \
+			-Dpipelines=auto \
+			-Dv4l2=enabled \
+			-Dcam=enabled \
+			-Dlc-compliance=disabled \
+			-Dtest=false \
+			-Ddocumentation=disabled \
+			-Dgstreamer=enabled \
+			-Dpycamera=enabled $(LOG_MUTE); \
+	 fi && \
+	 if [ -f subprojects/libpisp/src/helpers/media_device.cpp ]; then \
+		sed -i '/lockf(it->second.Get(), F_ULOCK, 0)/s/.*/        { [[maybe_unused]] int r_ = lockf(it->second.Get(), F_ULOCK, 0); }/' subprojects/libpisp/src/helpers/media_device.cpp; \
+	 fi && \
 	 ninja -j $(JOBS) -C build install -v $(LOG_MUTE) && \
 	 $(call fbprint_d,"libcamera")
