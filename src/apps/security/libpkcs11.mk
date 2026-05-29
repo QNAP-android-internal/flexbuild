@@ -12,6 +12,18 @@ libpkcs11: secure_obj
 	 cd $(SECDIR)/libpkcs11 && \
 	 sed -e 's/^CC/#CC/' -e 's/^LD/#LD/' -e 's/s -Werror/s/' -i flags.mk && \
 	 sed -i 's/-g -Iinclude/-g -fcommon -Iinclude/' Makefile && \
+	 sed -i 's/CK_BYTE[[:space:]]\{1,\}false[[:space:]]*=/CK_BYTE           ck_false =/' app/thread_test.c && \
+	 sed -i 's/\bfalse\b/ck_false/g' app/thread_test.c && \
+	 sed -i 's/(\*pfoo)()/(*pfoo)(void *)/' app/thread_test.c && \
+	 sed -i -E 's/\(CK_RV \(\*\)\(\)\)dlsym/(CK_RV (*)(void *))dlsym/' app/thread_test.c && \
+	 sed -i 's/CK_BYTE[[:space:]]\{1,\}false[[:space:]]*=/CK_BYTE           ck_false =/' app/pkcs11_app.c && \
+	 sed -i 's/\bfalse\b/ck_false/g' app/pkcs11_app.c && \
+	 sed -i 's/(\*pfoo)()/(*pfoo)(void *)/' app/pkcs11_app.c && \
+	 sed -i -E 's/\(CK_RV \(\*\)\(\)\)dlsym/(CK_RV (*)(void *))dlsym/' app/pkcs11_app.c && \
+	 sed -i 's/CK_BYTE[[:space:]]\{1,\}false[[:space:]]*=/CK_BYTE           ck_false =/' app/sign_digest_update_final.c && \
+	 sed -i 's/\bfalse\b/ck_false/g' app/sign_digest_update_final.c && \
+	 sed -i 's/(\*pfoo)()/(*pfoo)(void *)/' app/sign_digest_update_final.c && \
+	 sed -i -E 's/\(CK_RV \(\*\)\(\)\)dlsym/(CK_RV (*)(void *))dlsym/' app/sign_digest_update_final.c && \
 	 export CC="$(CROSS_COMPILE)gcc --sysroot=$(RFSDIR)" && \
 	 export LDFLAGS="-L$(RFSDIR)/usr/lib -L$(RFSDIR)/usr/lib/aarch64-linux-gnu" && \
 	 $(MAKE) clean $(LOG_MUTE) && \
