@@ -12,7 +12,7 @@ imx_lib:
 	 cd $(MMDIR)/imx_lib && \
 	 export CC="$(CROSS_COMPILE)gcc --sysroot=$(RFSDIR)" && \
 	 export AR="$(CROSS_COMPILE)ar" && \
-	 export CFLAGS="-O2 -std=gnu11 -I$(DESTDIR)/usr/include" && \
+	 export CFLAGS="-O2 -std=gnu17 -I$(DESTDIR)/usr/include" && \
 	 \
 	 if [ "$${MACHINE:0:4}" = "imx9" ]; then \
              SOCPLATFORM="MX9"; \
