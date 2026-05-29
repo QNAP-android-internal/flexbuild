@@ -16,9 +16,7 @@ gst_python: gstreamer gst_plugins_base
 	sed -e 's%@TARGET_CROSS@%$(CROSS_COMPILE)%g' -e 's%@STAGING_DIR@%$(RFSDIR)%g' \
 		-e 's%@DESTDIR@%$(DESTDIR)%g' $(FBDIR)/src/system/meson.cross > meson.cross && \
 	rm -rf build && \
-	PYVER=$$(ls $(RFSDIR)/usr/lib/python3.* -d 2>/dev/null | grep -oP 'python3\.\K[0-9]+' | sort -n | tail -1) && \
-	PYVER=$${PYVER:-14} && \
-	export PYTHONPATH="$(RFSDIR)/usr/lib/python3.$$PYVER/site-packages:$$PYTHONPATH" && \
+	export PYTHONPATH="$(RFSDIR)/usr/lib/python3.14/site-packages:$$PYTHONPATH" && \
 	export CC="$(CROSS_COMPILE)gcc --sysroot=$(RFSDIR)" && \
 	export CXX="$(CROSS_COMPILE)g++ --sysroot=$(RFSDIR)" && \
 	mkdir -p $(RFSDIR)/usr/lib && \
@@ -35,9 +33,8 @@ gst_python: gstreamer gst_plugins_base
 		--libdir=lib \
 		--wrap-mode=nodownload $(LOG_MUTE) && \
 	ninja -j $(JOBS) -C build install -v $(LOG_MUTE) && \
-	CPYVER=$$(ls $(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst_analytics.cpython-*-x86_64-linux-gnu.so 2>/dev/null | grep -oP 'cpython-\K[0-9]+' | tail -1) && \
-	mv $(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst_analytics.cpython-$${CPYVER}-x86_64-linux-gnu.so \
-		$(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst_analytics.cpython-$${CPYVER}-aarch64-linux-gnu.so && \
-	mv $(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst.cpython-$${CPYVER}-x86_64-linux-gnu.so \
-		$(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst.cpython-$${CPYVER}-aarch64-linux-gnu.so && \
+	mv $(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst_analytics.cpython-314-x86_64-linux-gnu.so \
+		$(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst_analytics.cpython-314-aarch64-linux-gnu.so && \
+	mv $(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst.cpython-314-x86_64-linux-gnu.so \
+		$(DESTDIR)/usr/lib/python3/dist-packages/gi/overrides/_gi_gst.cpython-314-aarch64-linux-gnu.so && \
 	$(call fbprint_d,"gst_python")
