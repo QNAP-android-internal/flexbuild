@@ -19,6 +19,7 @@ imx_nnstreamer_examples: gstreamer
 	 $(call patch_apply,imx_nnstreamer_examples,apps/gopoint) && \
 	 $(call fbprint_b,"imx_nnstreamer_examples") && \
 	 cd $(GPDIR)/imx_nnstreamer_examples && \
+	 sed -i 's/cmake_minimum_required(VERSION 3\.[0-4][^)]*)/cmake_minimum_required(VERSION 3.5)/' CMakeLists.txt && \
 	 export CC="$(CROSS_COMPILE)gcc --sysroot=$(RFSDIR)" && \
 	 export CXX="$(CROSS_COMPILE)g++ --sysroot=$(RFSDIR)" && \
 	 export CXXFLAGS="-I$(DESTDIR)/usr/include/ -I$(DESTDIR)/usr/include/gstreamer-1.0 \
@@ -31,9 +32,9 @@ imx_nnstreamer_examples: gstreamer
 	 mkdir -p build_$(DISTROTYPE)_$(ARCH) && \
 	 cmake  -S $(GPDIR)/imx_nnstreamer_examples \
 		-B build_$(DISTROTYPE)_$(ARCH) \
-		-DCMAKE_BUILD_TYPE=release $(LOG_MUTE) && \
-	 cmake --build build_$(DISTROTYPE)_$(ARCH) -j$(JOBS) --target all $(LOG_MUTE) && \
-	 cmake --install build_$(DISTROTYPE)_$(ARCH) --prefix /usr $(LOG_MUTE) && \
+		-DCMAKE_BUILD_TYPE=release && \
+	 cmake --build build_$(DISTROTYPE)_$(ARCH) -j$(JOBS) --target all && \
+	 cmake --install build_$(DISTROTYPE)_$(ARCH) --prefix /usr && \
 	 mkdir -p $(DESTDIR)/$(IMX_NNSTREANER_DIR) && \
 	 cp -rf {LICENSE,SCR-*} $(DESTDIR)/$(IMX_NNSTREANER_DIR) && \
 	 install -d 0755 $(DESTDIR)/$(IMX_NNSTREANER_DIR)/classification && \
