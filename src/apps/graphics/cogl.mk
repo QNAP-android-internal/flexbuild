@@ -29,6 +29,7 @@ cogl: $(DEP_COGL)
 		-march=armv8-a+crc+crypto -mbranch-protection=standard -O2 \
 		-fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wformat \
 		-Wformat-security -Werror=format-security -Wno-error=maybe-uninitialized \
+		-Wno-error=incompatible-pointer-types -Wno-error=discarded-qualifiers \
 		-I$(DESTDIR)/usr/include/libdrm -I$(DESTDIR)/usr/include -I$(RFSDIR)/usr/include" && \
 	 export LDFLAGS="--sysroot=$(RFSDIR) -L$(DESTDIR)/usr/lib -L$(RFSDIR)/usr/lib/aarch64-linux-gnu $(DEP_COGL_LDFLAGS)" && \
 	 \
