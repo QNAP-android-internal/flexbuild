@@ -1,0 +1,24 @@
+[Unit]
+Description=Generate GNOME monitors.xml so HDMI is primary at boot
+# gdm3 wipes /var/lib/gdm3/seat0/config/ during first greeter spawn, so writing
+# our monitors.xml before gdm starts has no effect. Run AFTER gdm is up so the
+# write lands on a stable dir, then restart gdm once to apply the new config.
+After=gdm.service
+Wants=gdm.service
+ConditionPathExists=!/run/gen-monitors.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/gen-monitors.py
+ExecStartPost=/bin/touch /run/gen-monitors.done
+# Only restart gdm when gen-monitors actually rewrote the greeter's
+# monitors.xml (typical: first boot after reflash, or HDMI hardware swap).
+# On unchanged boots the marker is absent and gdm is left alone -- avoids
+# the greeter-mid-init race that breaks the 2nd boot.
+ExecStartPost=/bin/sh -c '[ -f /run/gen-monitors.need-restart ] && { rm -f /run/gen-monitors.need-restart; systemctl --no-block try-restart gdm.service; } || true'
+RemainAfterExit=no
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical.target

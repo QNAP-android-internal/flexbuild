@@ -34,6 +34,10 @@ install -D -m 644 src/system/80-wired.network      "$ROOTDIR"/usr/lib/systemd/ne
 install -D -m 755 src/system/debian-post-install-pkg "$ROOTDIR"/usr/bin/
 install -D -m 644 src/system/51-bluez-imx.conf       "$ROOTDIR"/usr/share/wireplumber/wireplumber.conf.d/
 install -D -m 644 src/system/80-disable-logind.conf  "$ROOTDIR"/usr/share/wireplumber/wireplumber.conf.d/
+# Generate GNOME monitors.xml at boot so the GDM login lands on HDMI
+# regardless of which HDMI panel is plugged in (reads live EDID).
+install -D -m 755 src/system/gnome/gen-monitors.py      "$ROOTDIR"/usr/local/bin/gen-monitors.py
+install -D -m 644 src/system/gnome/gen-monitors.service "$ROOTDIR"/lib/systemd/system/gen-monitors.service
 install -D -m 644 configs/ubuntu/extra_packages_list "$ROOTDIR"/etc/
 
 chroot "$ROOTDIR" /bin/bash -e <<'EOF'
@@ -57,6 +61,7 @@ grep -q '^PermitEmptyPasswords' /etc/ssh/sshd_config || echo "PermitEmptyPasswor
 
 # systemd service symlinks
 ln -sf /lib/systemd/system/boot.mount /etc/systemd/system/local-fs.target.wants/boot.mount
+ln -sf /lib/systemd/system/gen-monitors.service /etc/systemd/system/graphical.target.wants/gen-monitors.service
 
 # Symlinks and firmware
 ln -sf /boot/tools/perf /usr/local/bin/perf
