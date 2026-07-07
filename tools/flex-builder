@@ -32,6 +32,11 @@ Most used example with separate command:
  bld rfs -m <machine>            # generate Debian-based rootfs for <machine>
  bld packrfs -m <machine>        # pack and compress target rootfs as rootfs_<distro_version>_debian_<machine>_arm64.tar.zst
 
+ bld sbom -r <distro> -m <machine>           # generate CycloneDX/SPDX SBOM of the rootfs (needs syft)
+ bld sbom vex -r <distro> -m <machine>       # CVE scan + CycloneDX VEX doc (needs grype)
+ bld sbom install-tools                      # one-time install of syft + grype
+ bld sbom quick-scan -r <distro> -m <machine># stdout-only scan, no files written
+
  bld clean-bsp                   # clean obsolete BSP (u-boot/atf/firmware) images
  bld clean-linux                 # clean obsolete linux image
  bld clean-apps -m <machine>     # clean the obsolete <machine>-specific apps components binary images
@@ -1219,6 +1224,42 @@ case "$1" in
         ;;
     merge-apps)
         merge_apps; exit
+        ;;
+    sbom)
+        # bld sbom -r <distro> -m <machine>           -> generate SBOM
+        # bld sbom vex -r <distro> -m <machine>       -> generate CycloneDX VEX (needs grype)
+        # bld sbom install-tools                       -> install syft + grype
+        # bld sbom quick-scan -r <distro> -m <machine> -> stdout-only scan
+        # bld sbom clean      -r <distro> -m <machine> -> remove SBOM dir
+        SBOM_SUBCMD=${2:-build}
+        SBOMDIR=${FBOUTDIR}/sbom/${DISTROTYPE}_${MACHINE}
+        case "$SBOM_SUBCMD" in
+            install-tools)
+                $MAKE -f $FBDIR/src/system/sbom.mk install-tools FBDIR=$FBDIR
+                ;;
+            vex|cve)
+                [ -n "$MACHINE" ] || { fbprint_e "missing -m <machine>"; exit 1; }
+                [ -d "$RFSDIR" ] || { fbprint_e "RFSDIR=$RFSDIR does not exist. Build rootfs first via 'bld rfs -r $DISTROTYPE -m $MACHINE'"; exit 1; }
+                $MAKE -f $FBDIR/src/system/sbom.mk vex \
+                    FBDIR=$FBDIR RFSDIR=$RFSDIR SBOMDIR=$SBOMDIR
+                ;;
+            quick-scan)
+                [ -n "$MACHINE" ] || { fbprint_e "missing -m <machine>"; exit 1; }
+                $MAKE -f $FBDIR/src/system/sbom.mk quick-scan \
+                    FBDIR=$FBDIR RFSDIR=$RFSDIR
+                ;;
+            clean)
+                $MAKE -f $FBDIR/src/system/sbom.mk clean \
+                    FBDIR=$FBDIR SBOMDIR=$SBOMDIR
+                ;;
+            *)
+                [ -n "$MACHINE" ] || { fbprint_e "missing -m <machine>"; exit 1; }
+                [ -d "$RFSDIR" ] || { fbprint_e "RFSDIR=$RFSDIR does not exist. Build rootfs first via 'bld rfs -r $DISTROTYPE -m $MACHINE'"; exit 1; }
+                $MAKE -f $FBDIR/src/system/sbom.mk sbom \
+                    FBDIR=$FBDIR RFSDIR=$RFSDIR SBOMDIR=$SBOMDIR
+                ;;
+        esac
+        exit
         ;;
     host-dep)
         check_host_dependent_pkg; exit
