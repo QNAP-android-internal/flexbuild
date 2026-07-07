@@ -1,0 +1,156 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "firmware",
+      "name": "flexbuild-imx-proprietary",
+      "description": "NXP i.MX95 + LSDK closed-source / binary-only components that automated scanners cannot detect from the deployed rootfs alone"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "imx-gpu-viv",
+      "version": "lf-6.12.20-2.0.0",
+      "supplier": { "name": "NXP Semiconductors" },
+      "description": "Vivante GPU userspace blob (GAL/VSC/GLESv2/gbm_viv) shipped via mali-imx archive",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "license-type", "value": "proprietary" },
+        { "name": "delivery", "value": "binary-blob" },
+        { "name": "flexbuild-recipe", "value": "src/apps/graphics/mali_imx.mk" }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "imx-mali",
+      "version": "r54.0-6.12.20",
+      "supplier": { "name": "NXP Semiconductors" },
+      "description": "ARM Mali DDK redistributed by NXP for i.MX95 (mali_imx.bin)",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "license-type", "value": "proprietary" },
+        { "name": "delivery", "value": "binary-blob" },
+        { "name": "flexbuild-recipe", "value": "src/apps/graphics/mali_imx.mk" }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "imx-vpu-hantro",
+      "version": "lf-6.12.20-2.0.0",
+      "supplier": { "name": "NXP Semiconductors" },
+      "description": "Hantro G1/G2/H1 VPU decoder/encoder libraries (libhantro, libcodec, libfslvpuwrap)",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "license-type", "value": "proprietary" },
+        { "name": "delivery", "value": "source+blob" },
+        { "name": "flexbuild-recipe", "value": "src/apps/multimedia/imx_vpu_hantro.mk" }
+      ]
+    },
+    {
+      "type": "firmware",
+      "name": "imx-vpu-hantro-firmware",
+      "version": "lf-6.12.20-2.0.0",
+      "supplier": { "name": "NXP Semiconductors" },
+      "description": "Hantro VPU firmware binaries loaded by libhantro at runtime",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "license-type", "value": "proprietary-firmware" },
+        { "name": "delivery", "value": "firmware-blob" },
+        { "name": "flexbuild-recipe", "value": "src/apps/multimedia/imx_vpu_hantro.mk" }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "imx-onnxruntime-neutron-ep",
+      "version": "lf-6.12.34_2.1.0",
+      "supplier": { "name": "NXP Semiconductors" },
+      "description": "NXP fork of ONNX Runtime 1.22.0 with NeutronExecutionProvider linked statically against libNeutronDriver",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "upstream", "value": "github.com/nxp-imx/onnxruntime-imx" },
+        { "name": "license-type", "value": "MIT + proprietary" },
+        { "name": "delivery", "value": "source+static-linked" },
+        { "name": "flexbuild-recipe", "value": "src/apps/ml/onnxruntime.mk" }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libNeutronDriver",
+      "version": "lf-6.12.34_2.1.0",
+      "supplier": { "name": "NXP Semiconductors" },
+      "description": "Userspace driver for the Neutron NPU (ioctl /dev/neutron0); linked statically into libonnxruntime",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "license-type", "value": "proprietary" },
+        { "name": "delivery", "value": "static-archive" },
+        { "name": "flexbuild-recipe", "value": "src/apps/ml/neutron.mk" }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tflite-neutron-delegate",
+      "version": "lf-6.12.34_2.1.0",
+      "supplier": { "name": "NXP Semiconductors" },
+      "description": "TensorFlow Lite delegate dispatching ops onto the Neutron NPU",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "upstream", "value": "github.com/nxp-imx/tflite-neutron-delegate" },
+        { "name": "license-type", "value": "Apache-2.0 + proprietary-dep" },
+        { "name": "delivery", "value": "source" },
+        { "name": "flexbuild-recipe", "value": "src/apps/ml/tflite_neutron_delegate.mk" }
+      ]
+    },
+    {
+      "type": "firmware",
+      "name": "LT9611UXD.bin",
+      "version": "V1.2_3ED862",
+      "supplier": { "name": "Lontium / IEI" },
+      "description": "Lontium LT9611UXD DSI-to-HDMI bridge firmware loaded via /lib/firmware/LT9611UXD.bin",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "license-type", "value": "closed" },
+        { "name": "delivery", "value": "firmware-blob" },
+        { "name": "flexbuild-recipe", "value": "yocto:meta-iei-imx-bsp/recipes-kernel/linux-firmware/linux-firmware-lt9611uxd.bb" }
+      ]
+    },
+    {
+      "type": "device-driver",
+      "name": "kernel-module-lt9611uxd",
+      "version": "lkm-83f4721",
+      "supplier": { "name": "IEI Integration Corp." },
+      "description": "Out-of-tree DRM bridge kernel module for Lontium LT9611UXD (not present in upstream linux drivers/gpu/drm/bridge/)",
+      "scope": "required",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "license-type", "value": "GPL-2.0-only (closed source)" },
+        { "name": "delivery", "value": "kernel-module-source" },
+        { "name": "flexbuild-recipe", "value": "yocto:meta-iei-imx-bsp/recipes-kernel/kernel-modules/kernel-module-lt9611uxd.bb" }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "secure_obj",
+      "version": "lsdk-25.12",
+      "supplier": { "name": "NXP Semiconductors" },
+      "description": "PKCS#11 backend for OP-TEE Secure Object (used by libpkcs11)",
+      "scope": "optional",
+      "properties": [
+        { "name": "platform", "value": "imx95" },
+        { "name": "license-type", "value": "BSD-3-Clause" },
+        { "name": "delivery", "value": "source" },
+        { "name": "flexbuild-recipe", "value": "src/apps/security/secure_obj.mk" }
+      ]
+    }
+  ]
+}
