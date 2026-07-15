@@ -24,6 +24,7 @@ mkdir -p "$ROOTDIR"/usr/local/bin \
 install -D -m 644 src/system/boot.mount            "$ROOTDIR"/lib/systemd/system/boot.mount
 install -D -m 755 tools/flex-installer             "$ROOTDIR"/usr/bin/flex-installer
 install -D -m 755 tools/resizerfs                  "$ROOTDIR"/usr/bin/resizerfs
+install -D -m 644 src/system/resizerfs.service     "$ROOTDIR"/lib/systemd/system/resizerfs.service
 install -D -m 644 src/system/udev/udev-rules-*/*.rules "$ROOTDIR"/etc/udev/rules.d/
 install -D -m 755 src/system/distroplatcfg         "$ROOTDIR"/usr/bin/distroplatcfg
 install -D -m 644 src/system/platcfg.service       "$ROOTDIR"/lib/systemd/system/platcfg.service
@@ -61,6 +62,8 @@ grep -q '^PermitEmptyPasswords' /etc/ssh/sshd_config || echo "PermitEmptyPasswor
 
 # systemd service symlinks
 ln -sf /lib/systemd/system/boot.mount /etc/systemd/system/local-fs.target.wants/boot.mount
+mkdir -p /etc/systemd/system/basic.target.wants
+ln -sf /lib/systemd/system/resizerfs.service /etc/systemd/system/basic.target.wants/resizerfs.service
 ln -sf /lib/systemd/system/gen-monitors.service /etc/systemd/system/graphical.target.wants/gen-monitors.service
 
 # Symlinks and firmware

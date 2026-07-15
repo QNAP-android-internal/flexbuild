@@ -1,0 +1,16 @@
+[Unit]
+Description=Expand root filesystem to fill the storage device
+DefaultDependencies=no
+After=local-fs.target
+Before=basic.target
+ConditionPathIsExecutable=/usr/bin/resizerfs
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/resizerfs
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=basic.target
