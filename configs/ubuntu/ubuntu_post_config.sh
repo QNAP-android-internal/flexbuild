@@ -60,6 +60,11 @@ passwd --delete ubuntu >/dev/null || true
 grep -q '^PermitRootLogin' /etc/ssh/sshd_config || echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 grep -q '^PermitEmptyPasswords' /etc/ssh/sshd_config || echo "PermitEmptyPasswords yes" >> /etc/ssh/sshd_config
 
+# systemd 258+ emits OSC 3008 shell-integration issue fix
+dpkg-divert --local --rename --add /etc/profile.d/80-systemd-osc-context.sh
+dpkg-divert --local --rename --add /usr/lib/tmpfiles.d/20-systemd-osc-context.conf
+rm -f /etc/profile.d/80-systemd-osc-context.sh
+
 # systemd service symlinks
 ln -sf /lib/systemd/system/boot.mount /etc/systemd/system/local-fs.target.wants/boot.mount
 mkdir -p /etc/systemd/system/basic.target.wants
