@@ -66,7 +66,7 @@ imx_pkgs=(
 	qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-window
 	qml6-module-qtquick-templates qml6-module-qtquick-layouts qml6-module-qtqml-workerscript
 	qml6-module-qt5compat-graphicaleffects glmark2-es2-wayland wayland-utils
-	v4l-utils mesa-utils alsa-utils qt6-svg-plugins
+	v4l-utils mesa-utils alsa-utils qt6-svg-plugins libubootenv-tool
     libcjson-dev libxshmfence-dev x11proto-dev libxfont-dev libxkbfile-dev libxv-dev
     libbsd-dev libxcb-dri3-dev libxcb-present-dev libepoxy-dev libdbus-1-dev
     libwayland-bin libasound2-dev libgudev-1.0-dev
