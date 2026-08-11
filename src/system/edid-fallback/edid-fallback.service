@@ -1,0 +1,13 @@
+[Unit]
+Description=EDID fallback for wedged HDMI monitors
+# Ubuntu runs GDM (not weston); also run before gen-monitors.service so a
+# recovered EDID lets it generate a real monitors.xml instead of bailing out.
+Before=display-manager.service gdm.service gen-monitors.service
+After=systemd-udev-trigger.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/edid-fallback.sh
+
+[Install]
+WantedBy=multi-user.target

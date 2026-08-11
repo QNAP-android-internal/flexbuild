@@ -38,7 +38,11 @@ install -D -m 644 src/system/80-disable-logind.conf  "$ROOTDIR"/usr/share/wirepl
 # Generate GNOME monitors.xml at boot so the GDM login lands on HDMI
 # regardless of which HDMI panel is plugged in (reads live EDID).
 install -D -m 755 src/system/gnome/gen-monitors.py      "$ROOTDIR"/usr/local/bin/gen-monitors.py
-install -D -m 644 src/system/gnome/gen-monitors.service "$ROOTDIR"/lib/systemd/system/gen-monitors.service
+install -D -m 644 src/system/gnome/gen-monitors.service "$ROOTDIR"/usr/lib/systemd/system/gen-monitors.service
+install -D -m 755 src/system/edid-fallback/edid-fallback.sh      "$ROOTDIR"/usr/sbin/edid-fallback.sh
+install -D -m 644 src/system/edid-fallback/edid-fallback.service "$ROOTDIR"/usr/lib/systemd/system/edid-fallback.service
+install -D -m 644 src/system/edid-fallback/rtk-fhd.bin           "$ROOTDIR"/usr/lib/firmware/edid/rtk-fhd.bin
+install -D -m 644 src/system/edid-fallback/lg-ultrafine-4k.bin   "$ROOTDIR"/usr/lib/firmware/edid/lg-ultrafine-4k.bin
 install -D -m 644 configs/ubuntu/extra_packages_list "$ROOTDIR"/etc/
 
 chroot "$ROOTDIR" /bin/bash -e <<'EOF'
@@ -70,6 +74,7 @@ ln -sf /lib/systemd/system/boot.mount /etc/systemd/system/local-fs.target.wants/
 mkdir -p /etc/systemd/system/basic.target.wants
 ln -sf /lib/systemd/system/resizerfs.service /etc/systemd/system/basic.target.wants/resizerfs.service
 ln -sf /lib/systemd/system/gen-monitors.service /etc/systemd/system/graphical.target.wants/gen-monitors.service
+ln -sf /lib/systemd/system/edid-fallback.service /etc/systemd/system/multi-user.target.wants/edid-fallback.service
 
 # Symlinks and firmware
 ln -sf /boot/tools/perf /usr/local/bin/perf
