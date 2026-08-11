@@ -370,6 +370,8 @@ flex_install_distro() {
 		sudo chmod 666 $bootmountfile
                 sudo sed -i s/What=UUID=.*/What=UUID=$uuid_boot/ $bootmountfile
 		sudo chmod 644 $bootmountfile
+		sudo mkdir -p $rootpartition/etc/systemd/system/local-fs.target.wants
+		sudo ln -sf /lib/systemd/system/boot.mount $rootpartition/etc/systemd/system/local-fs.target.wants/boot.mount
             fi
 	fi
 

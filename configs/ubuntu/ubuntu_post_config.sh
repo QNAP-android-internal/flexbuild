@@ -74,7 +74,6 @@ dpkg-divert --local --rename --add /usr/lib/tmpfiles.d/20-systemd-osc-context.co
 rm -f /etc/profile.d/80-systemd-osc-context.sh
 
 # systemd service symlinks
-ln -sf /lib/systemd/system/boot.mount /etc/systemd/system/local-fs.target.wants/boot.mount
 mkdir -p /etc/systemd/system/basic.target.wants
 ln -sf /lib/systemd/system/resizerfs.service /etc/systemd/system/basic.target.wants/resizerfs.service
 ln -sf /lib/systemd/system/gen-monitors.service /etc/systemd/system/graphical.target.wants/gen-monitors.service
