@@ -1,0 +1,64 @@
+From: Wig Cheng <onlywig@gmail.com>
+Date: Mon, 10 Aug 2026 18:00:00 +0800
+Subject: [PATCH] v4l2codec: advertise constrained-high when driver reports high
+
+The probed H.264 profile list is built verbatim from the driver's
+V4L2_CID_MPEG_VIDEO_H264_PROFILE menu. The Wave6 decoder on i.MX95
+reports {baseline, constrained-baseline, main, extended, high} but
+not constrained-high, so caps negotiation rejects streams tagged
+profile=constrained-high by h264parse (common for 4k web encodes)
+and autoplugging claims no decoder exists -- even though
+constrained-high is a strict subset of high and decodes fine.
+
+Append "constrained-high" to the probed list whenever the driver
+advertises "high" and the menu did not already include it.
+
+Upstream-Status: Pending
+Signed-off-by: Wig Cheng <wigcheng@ieiworld.com>
+---
+--- a/sys/v4l2/gstv4l2codec.c
++++ b/sys/v4l2/gstv4l2codec.c
+@@ -34,6 +34,22 @@
+ 
+ #include <gst/gst.h>
+ 
++static gboolean
++profile_list_contains (const GValue * profiles, const gchar * name)
++{
++  guint i;
++
++  for (i = 0; i < gst_value_list_get_size (profiles); i++) {
++    const GValue *v = gst_value_list_get_value (profiles, i);
++    const gchar *s = g_value_get_string (v);
++
++    if (s && g_str_equal (s, name))
++      return TRUE;
++  }
++
++  return FALSE;
++}
++
+ gboolean
+ gst_v4l2_codec_probe_profiles (const GstV4l2Codec * codec, gint video_fd,
+     GValue * profiles)
+@@ -72,6 +88,20 @@
+         g_value_unset (profiles);
+         ret = FALSE;
+       }
++
++      /* constrained-high is a strict subset of high; drivers (e.g. Wave6)
++       * often omit it from the profile menu even though any high-capable
++       * decoder handles it. Advertise it so caps negotiation accepts such
++       * streams instead of reporting "no decoder". */
++      if (ret && codec->profile_cid == V4L2_CID_MPEG_VIDEO_H264_PROFILE &&
++          profile_list_contains (profiles, "high") &&
++          !profile_list_contains (profiles, "constrained-high")) {
++        GValue value = G_VALUE_INIT;
++
++        g_value_init (&value, G_TYPE_STRING);
++        g_value_set_string (&value, "constrained-high");
++        gst_value_list_append_and_take_value (profiles, &value);
++      }
+     }
+   }
+ 
