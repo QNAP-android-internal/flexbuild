@@ -13,7 +13,7 @@ ROOTDIR=${1:-/tmp/rootfs}
 echo -e "\n[INFO] setting up Ubuntu rootfs"
 
 mkdir -p "$ROOTDIR"/usr/local/bin \
-         "$ROOTDIR"/lib/systemd/system \
+         "$ROOTDIR"/usr/lib/systemd/system \
          "$ROOTDIR"/etc/udev/rules.d \
          "$ROOTDIR"/etc/modprobe.d \
          "$ROOTDIR"/etc/systemd/system/multi-user.target.wants \
@@ -21,13 +21,13 @@ mkdir -p "$ROOTDIR"/usr/local/bin \
          "$ROOTDIR"/etc/systemd/system/local-fs.target.wants \
          "$ROOTDIR"/usr/share/wireplumber/wireplumber.conf.d
 
-install -D -m 644 src/system/boot.mount            "$ROOTDIR"/lib/systemd/system/boot.mount
+install -D -m 644 src/system/boot.mount            "$ROOTDIR"/usr/lib/systemd/system/boot.mount
 install -D -m 755 tools/flex-installer             "$ROOTDIR"/usr/bin/flex-installer
 install -D -m 755 tools/resizerfs                  "$ROOTDIR"/usr/bin/resizerfs
-install -D -m 644 src/system/resizerfs.service     "$ROOTDIR"/lib/systemd/system/resizerfs.service
+install -D -m 644 src/system/resizerfs.service     "$ROOTDIR"/usr/lib/systemd/system/resizerfs.service
 install -D -m 644 src/system/udev/udev-rules-*/*.rules "$ROOTDIR"/etc/udev/rules.d/
 install -D -m 755 src/system/distroplatcfg         "$ROOTDIR"/usr/bin/distroplatcfg
-install -D -m 644 src/system/platcfg.service       "$ROOTDIR"/lib/systemd/system/platcfg.service
+install -D -m 644 src/system/platcfg.service       "$ROOTDIR"/usr/lib/systemd/system/platcfg.service
 install -D -m 644 src/system/blacklist.conf        "$ROOTDIR"/etc/modprobe.d/blacklist.conf
 install -D -m 644 src/system/ts.conf               "$ROOTDIR"/etc/ts.conf.bak
 install -D -m 755 src/system/board_id.sh           "$ROOTDIR"/usr/bin/board_id.sh
