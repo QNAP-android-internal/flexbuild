@@ -45,6 +45,8 @@ install -D -m 644 src/system/edid-fallback/rtk-fhd.bin           "$ROOTDIR"/usr/
 install -D -m 644 src/system/edid-fallback/lg-ultrafine-4k.bin   "$ROOTDIR"/usr/lib/firmware/edid/lg-ultrafine-4k.bin
 
 echo "lontium-lt9611uxd" > "$ROOTDIR"/etc/modules-load.d/lt9611uxd.conf
+echo "/dev/mmcblk0 0x700000 0x4000" > "$ROOTDIR"/etc/fw_env.config
+
 install -D -m 644 configs/ubuntu/extra_packages_list "$ROOTDIR"/etc/
 
 chroot "$ROOTDIR" /bin/bash -e <<'EOF'
