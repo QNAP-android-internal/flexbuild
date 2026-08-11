@@ -68,6 +68,17 @@ passwd --delete ubuntu >/dev/null || true
 grep -q '^PermitRootLogin' /etc/ssh/sshd_config || echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 grep -q '^PermitEmptyPasswords' /etc/ssh/sshd_config || echo "PermitEmptyPasswords yes" >> /etc/ssh/sshd_config
 
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d /etc/dconf/profile
+printf "user-db:user\nsystem-db:local\n" > /etc/dconf/profile/user
+cat > /etc/dconf/db/local.d/00-disable-suspend <<'CONF'
+[org/gnome/settings-daemon/plugins/power]
+sleep-inactive-ac-type='nothing'
+sleep-inactive-battery-type='nothing'
+CONF
+cp /etc/dconf/db/local.d/00-disable-suspend /etc/dconf/db/gdm.d/00-disable-suspend
+dconf update || true
+
 # systemd 258+ emits OSC 3008 shell-integration issue fix
 dpkg-divert --local --rename --add /etc/profile.d/80-systemd-osc-context.sh
 dpkg-divert --local --rename --add /usr/lib/tmpfiles.d/20-systemd-osc-context.conf
