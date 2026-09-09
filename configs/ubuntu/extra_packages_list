@@ -85,6 +85,6 @@ imx_pkgs=(
 gnome_pkgs=(
 	libgnome-desktop-3-dev chromium-browser dmz-cursor-theme gnome-core
 	libclutter-1.0-dev libclutter-gst-3.0-dev libclutter-gtk-1.0-dev
-    gnome-sound-recorder rhythmbox
+    gnome-sound-recorder rhythmbox gnome-remote-desktop gnome-keyring rtkit
 )
 
