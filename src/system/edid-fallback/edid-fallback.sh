@@ -1,14 +1,23 @@
 #!/bin/sh
 
-CONN=/sys/class/drm/card0-HDMI-A-1
-OVERRIDE=/sys/kernel/debug/dri/0/HDMI-A-1/edid_override
+find_hdmi() {
+    for c in /sys/class/drm/card*-HDMI-A-1; do
+        [ -e "$c/status" ] || continue
+        CONN=$c
+        CARD=${c#/sys/class/drm/card}; CARD=${CARD%%-*}
+        OVERRIDE=/sys/kernel/debug/dri/$CARD/HDMI-A-1/edid_override
+        return 0
+    done
+    return 1
+}
+CONN=; OVERRIDE=
 
 i=0
-while [ ! -e "$CONN/status" ] && [ $i -lt 150 ]; do
+while ! find_hdmi && [ $i -lt 150 ]; do
     sleep 0.1
     i=$((i + 1))
 done
-[ -e "$CONN/status" ] || exit 0
+[ -n "$CONN" ] || exit 0
 
 i=0
 while [ $i -lt 10 ]; do
