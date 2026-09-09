@@ -1,0 +1,24 @@
+# User unit: keep HDMI as the primary display (extending onto LVDS, falling
+# back to the vkms virtual output when nothing is attached) for the whole
+# session.
+#
+# Resident rather than one-shot: mutter discards a temporary monitor config
+# whenever the monitor set changes, and that happens several times during boot
+# (EDID injection for the wedged HDMI sink, the DPU finishing probe). A
+# one-shot at login raced those events and lost, leaving the session on
+# mutter's automatic layout with the builtin panel primary. This service
+# re-applies on every MonitorsChanged instead, so hotplug is covered too.
+# See the script header for why monitors.xml cannot be used on this panel.
+[Unit]
+Description=Keep GNOME monitor layout (HDMI primary, LVDS extended, vkms fallback)
+After=gnome-session-initialized.target
+PartOf=gnome-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/gnome-display-layout
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=gnome-session.target

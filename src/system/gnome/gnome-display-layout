@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# Keep the GNOME session's monitor layout sane for every combination of
+# attached displays on this board:
+#
+#   nothing attached   -> the LVDS connector still exists (fixed panel, no HPD)
+#                         so the session lands there; if even that is gone the
+#                         vkms Virtual output is used, keeping GNOME (and with
+#                         it the RDP server) alive headless.
+#   HDMI only          -> HDMI is primary.
+#   LVDS only          -> HDMI's HPD reads disconnected, LVDS becomes primary.
+#   HDMI + LVDS        -> HDMI is primary, LVDS extends to its right.
+#
+# Why a resident service and not a one-shot, and not monitors.xml either:
+#
+#   * monitors.xml is unusable here. This panel's timing is 1024x768@59.912
+#     (clock 64900kHz / (1344*806)), but mutter serialises the rate as
+#     "60.000" and compares against 59.912 on read-back, so ANY stored
+#     configuration that enables LVDS is rejected with
+#       Failed to use stored monitor configuration: Invalid mode 1024x768
+#     and mutter silently falls back to its automatic layout -- which makes
+#     the builtin panel primary, not HDMI. mutter cannot even re-read a file
+#     it wrote itself.
+#   * A temporary (non-persisted) config avoids that serialisation entirely,
+#     but mutter drops it whenever the set of monitors changes. During boot
+#     that happens more than once (EDID injection for the wedged HDMI sink,
+#     the DPU finishing probe), so a one-shot at login raced and lost: the
+#     session ended up on mutter's automatic layout with LVDS primary.
+#
+# So: apply a temporary config, then re-apply on every MonitorsChanged. The
+# no-op check below is what stops this from looping forever, since applying a
+# config itself emits MonitorsChanged.
+
+import os
+import sys
+from pathlib import Path
+
+import gi
+
+gi.require_version("GLib", "2.0")
+from gi.repository import Gio, GLib  # noqa: E402
+
+# Virtual (vkms) is deliberately absent: it is a fallback, never preferred.
+PRIORITY = ["HDMI", "DP", "eDP", "LVDS", "DSI", "VGA"]
+DBUS_NAME = "org.gnome.Mutter.DisplayConfig"
+DBUS_PATH = "/org/gnome/Mutter/DisplayConfig"
+METHOD_TEMPORARY = 1
+# Monitor changes arrive in bursts during boot; settle before reacting.
+DEBOUNCE_MS = 1500
+
+# Once someone arranges their displays in GNOME Settings, mutter writes this
+# file and that choice wins -- we must not fight the user at every login.
+# Nothing else creates it: this tool only ever applies a temporary config.
+USER_CONFIG = Path(
+    os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "monitors.xml"
+
+
+def log(msg):
+    print(msg, file=sys.stderr, flush=True)
+
+
+def priority(connector):
+    for i, prefix in enumerate(PRIORITY):
+        if connector.startswith(prefix):
+            return i
+    return len(PRIORITY)
+
+
+def pick_mode(modes):
+    """Preferred mode, else the current one, else the first offered."""
+    for key in ("is-preferred", "is-current"):
+        for mode in modes:
+            if mode[6].get(key):
+                return mode[0]
+    return modes[0][0] if modes else None
+
+
+class LayoutKeeper:
+    def __init__(self):
+        self.bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        self.pending = 0
+
+    def state(self):
+        return self.bus.call_sync(
+            DBUS_NAME, DBUS_PATH, DBUS_NAME, "GetCurrentState", None, None,
+            Gio.DBusCallFlags.NONE, 10000, None).unpack()
+
+    @staticmethod
+    def wanted(monitors):
+        """[(connector, mode, x)] with the first entry as primary."""
+        outputs = [(spec[0], pick_mode(modes)) for spec, modes, _ in monitors]
+        outputs = [o for o in outputs if o[1]]
+        physical = [o for o in outputs if not o[0].startswith("Virtual")]
+        chosen = sorted(physical, key=lambda o: priority(o[0])) or outputs[:1]
+
+        placed, x = [], 0
+        for connector, mode in chosen:
+            placed.append((connector, mode, x))
+            x += int(mode.split("x")[0])
+        return placed
+
+    @staticmethod
+    def already_applied(logical, placed):
+        """True when mutter's live layout matches what we would apply.
+
+        This is the loop breaker: ApplyMonitorsConfig itself emits
+        MonitorsChanged, so without it every apply would trigger another.
+        """
+        live = []
+        for x, _y, _scale, _transform, is_primary, mons, _p in logical:
+            if mons:
+                live.append((mons[0][0], x, bool(is_primary)))
+        want = [(c, x, i == 0) for i, (c, _m, x) in enumerate(placed)]
+        return sorted(live) == sorted(want)
+
+    def apply(self):
+        self.pending = 0
+        try:
+            serial, monitors, logical, _props = self.state()
+        except GLib.Error as error:
+            log("cannot read display state: %s" % error.message)
+            return GLib.SOURCE_REMOVE
+
+        placed = self.wanted(monitors)
+        if not placed:
+            log("no usable monitor reported; nothing to do")
+            return GLib.SOURCE_REMOVE
+
+        if self.already_applied(logical, placed):
+            log("layout already correct: %s"
+                % ", ".join("%s@x=%d" % (c, x) for c, _m, x in placed))
+            return GLib.SOURCE_REMOVE
+
+        logical_monitors = [
+            (x, 0, 1.0, 0, index == 0, [(connector, mode, {})])
+            for index, (connector, mode, x) in enumerate(placed)
+        ]
+        log("applying layout: %s" % ", ".join(
+            "%s%s@x=%d" % (c, "(primary)" if i == 0 else "", x)
+            for i, (c, _m, x) in enumerate(placed)))
+        try:
+            self.bus.call_sync(
+                DBUS_NAME, DBUS_PATH, DBUS_NAME, "ApplyMonitorsConfig",
+                GLib.Variant("(uua(iiduba(ssa{sv}))a{sv})",
+                             (serial, METHOD_TEMPORARY, logical_monitors, {})),
+                None, Gio.DBusCallFlags.NONE, 15000, None)
+        except GLib.Error as error:
+            log("ApplyMonitorsConfig failed: %s" % error.message)
+        return GLib.SOURCE_REMOVE
+
+    def schedule(self, *_args):
+        if self.pending:
+            GLib.source_remove(self.pending)
+        self.pending = GLib.timeout_add(DEBOUNCE_MS, self.apply)
+
+    def run(self):
+        self.bus.signal_subscribe(
+            None, DBUS_NAME, "MonitorsChanged", DBUS_PATH, None,
+            Gio.DBusSignalFlags.NONE, self.schedule)
+        self.schedule()
+        GLib.MainLoop().run()
+
+
+def main():
+    if USER_CONFIG.exists() and "--force" not in sys.argv:
+        log("%s exists (display layout set by the user); leaving it alone"
+            % USER_CONFIG)
+        return 0
+    LayoutKeeper().run()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
