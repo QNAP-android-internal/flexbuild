@@ -1,0 +1,13 @@
+[Unit]
+Description=Load vkms after the real DRM display controller (headless remote-desktop fallback)
+DefaultDependencies=no
+After=systemd-modules-load.service systemd-udev-trigger.service
+Before=gdm.service display-manager.service edid-fallback.service
+ConditionPathExists=!/sys/module/vkms
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'for i in $(seq 40); do ls /dev/dri/by-path/ 2>/dev/null | grep -v vkms | grep -q -- "-card$" && break; sleep 0.5; done; modprobe vkms'
+
+[Install]
+WantedBy=sysinit.target
