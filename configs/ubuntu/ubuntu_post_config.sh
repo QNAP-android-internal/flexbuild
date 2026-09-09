@@ -124,10 +124,21 @@ tls-cert='/home/ubuntu/.local/share/gnome-remote-desktop/tls.crt'
 tls-key='/home/ubuntu/.local/share/gnome-remote-desktop/tls.key'
 CONF
 cp /etc/dconf/db/local.d/10-remote-desktop /etc/dconf/db/gdm.d/10-remote-desktop
-# dconf-cli is not in the base chroot; the keyfiles get compiled when the
-# dconf package lands at first boot (its postinst runs `dconf update`) and
-# debian-post-install-pkg runs it again explicitly.
 dconf update || true
+
+# mutter ships a udev rule tagging vkms with mutter-device-ignore; shadow that
+# file with the vkms lines stripped so the virtual output is usable headless
+# (a runtime TAG-= does not work: mutter reads the sticky TAGS list).
+if [ -f /usr/lib/udev/rules.d/61-mutter.rules ]; then
+  grep -v vkms /usr/lib/udev/rules.d/61-mutter.rules > /etc/udev/rules.d/61-mutter.rules
+fi
+
+# Auto-login so a session (and with it the user-mode RDP server) exists with
+# nobody at the console; Wayland only (GLES stack).
+if [ -f /etc/gdm3/custom.conf ]; then
+  grep -q '^WaylandEnable'        /etc/gdm3/custom.conf || sed -i '/^\[daemon\]/a WaylandEnable=true' /etc/gdm3/custom.conf
+  grep -q '^AutomaticLoginEnable' /etc/gdm3/custom.conf || sed -i '/^\[daemon\]/a AutomaticLoginEnable=true\nAutomaticLogin=ubuntu' /etc/gdm3/custom.conf
+fi
 
 # systemd 258+ emits OSC 3008 shell-integration issue fix
 dpkg-divert --local --rename --add /etc/profile.d/80-systemd-osc-context.sh
