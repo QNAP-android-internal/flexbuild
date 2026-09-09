@@ -35,15 +35,16 @@ install -D -m 644 src/system/80-wired.network      "$ROOTDIR"/usr/lib/systemd/ne
 install -D -m 755 src/system/debian-post-install-pkg "$ROOTDIR"/usr/bin/
 install -D -m 644 src/system/51-bluez-imx.conf       "$ROOTDIR"/usr/share/wireplumber/wireplumber.conf.d/
 install -D -m 644 src/system/80-disable-logind.conf  "$ROOTDIR"/usr/share/wireplumber/wireplumber.conf.d/
-# Generate GNOME monitors.xml at boot so the GDM login lands on HDMI
-# regardless of which HDMI panel is plugged in (reads live EDID).
-install -D -m 755 src/system/gnome/gen-monitors.py      "$ROOTDIR"/usr/local/bin/gen-monitors.py
-install -D -m 644 src/system/gnome/gen-monitors.service "$ROOTDIR"/usr/lib/systemd/system/gen-monitors.service
 install -D -m 755 src/system/edid-fallback/edid-fallback.sh      "$ROOTDIR"/usr/sbin/edid-fallback.sh
 install -D -m 644 src/system/edid-fallback/edid-fallback.service "$ROOTDIR"/usr/lib/systemd/system/edid-fallback.service
 install -D -m 644 src/system/edid-fallback/rtk-fhd.bin           "$ROOTDIR"/usr/lib/firmware/edid/rtk-fhd.bin
 install -D -m 644 src/system/edid-fallback/lg-ultrafine-4k.bin   "$ROOTDIR"/usr/lib/firmware/edid/lg-ultrafine-4k.bin
 install -D -m 644 src/system/gnome/vkms.service         "$ROOTDIR"/usr/lib/systemd/system/vkms.service
+# Per-session monitor layout: HDMI primary, other panels extended, vkms only
+# as a headless fallback. Applied over D-Bus because mutter cannot round-trip
+# the LVDS panel's 59.912Hz mode in monitors.xml (see the script header).
+install -D -m 755 src/system/gnome/gnome-display-layout         "$ROOTDIR"/usr/local/bin/gnome-display-layout
+install -D -m 644 src/system/gnome/gnome-display-layout.service "$ROOTDIR"/usr/lib/systemd/user/gnome-display-layout.service
 
 echo "lontium-lt9611uxd" > "$ROOTDIR"/etc/modules-load.d/lt9611uxd.conf
 echo "/dev/mmcblk0 0x700000 0x4000" > "$ROOTDIR"/etc/fw_env.config
@@ -148,12 +149,12 @@ rm -f /etc/profile.d/80-systemd-osc-context.sh
 # systemd service symlinks
 mkdir -p /etc/systemd/system/basic.target.wants
 ln -sf /lib/systemd/system/resizerfs.service /etc/systemd/system/basic.target.wants/resizerfs.service
-ln -sf /lib/systemd/system/gen-monitors.service /etc/systemd/system/graphical.target.wants/gen-monitors.service
 ln -sf /lib/systemd/system/edid-fallback.service /etc/systemd/system/multi-user.target.wants/edid-fallback.service
 mkdir -p /etc/systemd/system/sysinit.target.wants /etc/systemd/user/gnome-session.target.wants
 ln -sf /lib/systemd/system/vkms.service /etc/systemd/system/sysinit.target.wants/vkms.service
 # user-mode RDP server for every GNOME session (unit arrives with gnome-remote-desktop at first boot)
 ln -sf /usr/lib/systemd/user/gnome-remote-desktop.service /etc/systemd/user/gnome-session.target.wants/gnome-remote-desktop.service
+ln -sf /usr/lib/systemd/user/gnome-display-layout.service /etc/systemd/user/gnome-session.target.wants/gnome-display-layout.service
 
 # Symlinks and firmware
 ln -sf /boot/tools/perf /usr/local/bin/perf
