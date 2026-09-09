@@ -57,6 +57,35 @@ mkdir -p /usr/local/bin \
          /etc/systemd/system/graphical.target.wants \
          /etc/systemd/system/local-fs.target.wants
 
+# --- headless remote desktop: seed /etc/skel BEFORE useradd copies it ---
+SKEL_GRD=/etc/skel/.local/share/gnome-remote-desktop
+SKEL_KR=/etc/skel/.local/share/keyrings
+mkdir -p "$SKEL_GRD" "$SKEL_KR"
+openssl req -x509 -newkey rsa:2048 -nodes -days 3650 -subj /CN=imx-remote-desktop \
+  -keyout "$SKEL_GRD/tls.key" -out "$SKEL_GRD/tls.crt" >/dev/null 2>&1
+chmod 600 "$SKEL_GRD/tls.key"
+cat > "$SKEL_KR/login.keyring" <<'KEYRING'
+[keyring]
+display-name=Login
+ctime=0
+mtime=0
+lock-on-idle=false
+lock-after=false
+
+[1]
+item-type=0
+display-name=GNOME Remote Desktop RDP credentials
+secret={'username': <'ubuntu'>, 'password': <'ubuntu'>}
+mtime=0
+ctime=0
+
+[1:attribute0]
+name=xdg:schema
+type=string
+value=org.gnome.RemoteDesktop.RdpCredentials
+KEYRING
+chmod 600 "$SKEL_KR/login.keyring"
+
 # User and group setup
 id -u ubuntu &>/dev/null || useradd -m -d /home/ubuntu -s /bin/bash ubuntu
 getent group wayland &>/dev/null || groupadd wayland
@@ -77,6 +106,26 @@ sleep-inactive-ac-type='nothing'
 sleep-inactive-battery-type='nothing'
 CONF
 cp /etc/dconf/db/local.d/00-disable-suspend /etc/dconf/db/gdm.d/00-disable-suspend
+# The GDM greeter only honours gdm.d if its profile lists system-db:gdm;
+# Ubuntu 26.04's stock /usr/share/dconf/profile/gdm omits it.
+printf "user-db:user\nsystem-db:gdm\nfile-db:/var/lib/gdm3/greeter-dconf-defaults\n" > /etc/dconf/profile/gdm
+# Never blank the screen (idle-delay), and enable the RDP server with the
+# skel-seeded TLS pair. view-only defaults to true in g-r-d 50 -> force off
+# or clients see the desktop but cannot move the mouse.
+cat > /etc/dconf/db/local.d/10-remote-desktop <<'CONF'
+[org/gnome/desktop/session]
+idle-delay=uint32 0
+
+[org/gnome/desktop/remote-desktop/rdp]
+enable=true
+view-only=false
+tls-cert='/home/ubuntu/.local/share/gnome-remote-desktop/tls.crt'
+tls-key='/home/ubuntu/.local/share/gnome-remote-desktop/tls.key'
+CONF
+cp /etc/dconf/db/local.d/10-remote-desktop /etc/dconf/db/gdm.d/10-remote-desktop
+# dconf-cli is not in the base chroot; the keyfiles get compiled when the
+# dconf package lands at first boot (its postinst runs `dconf update`) and
+# debian-post-install-pkg runs it again explicitly.
 dconf update || true
 
 # systemd 258+ emits OSC 3008 shell-integration issue fix
