@@ -43,6 +43,7 @@ install -D -m 755 src/system/edid-fallback/edid-fallback.sh      "$ROOTDIR"/usr/
 install -D -m 644 src/system/edid-fallback/edid-fallback.service "$ROOTDIR"/usr/lib/systemd/system/edid-fallback.service
 install -D -m 644 src/system/edid-fallback/rtk-fhd.bin           "$ROOTDIR"/usr/lib/firmware/edid/rtk-fhd.bin
 install -D -m 644 src/system/edid-fallback/lg-ultrafine-4k.bin   "$ROOTDIR"/usr/lib/firmware/edid/lg-ultrafine-4k.bin
+install -D -m 644 src/system/gnome/vkms.service         "$ROOTDIR"/usr/lib/systemd/system/vkms.service
 
 echo "lontium-lt9611uxd" > "$ROOTDIR"/etc/modules-load.d/lt9611uxd.conf
 echo "/dev/mmcblk0 0x700000 0x4000" > "$ROOTDIR"/etc/fw_env.config
@@ -138,6 +139,10 @@ mkdir -p /etc/systemd/system/basic.target.wants
 ln -sf /lib/systemd/system/resizerfs.service /etc/systemd/system/basic.target.wants/resizerfs.service
 ln -sf /lib/systemd/system/gen-monitors.service /etc/systemd/system/graphical.target.wants/gen-monitors.service
 ln -sf /lib/systemd/system/edid-fallback.service /etc/systemd/system/multi-user.target.wants/edid-fallback.service
+mkdir -p /etc/systemd/system/sysinit.target.wants /etc/systemd/user/gnome-session.target.wants
+ln -sf /lib/systemd/system/vkms.service /etc/systemd/system/sysinit.target.wants/vkms.service
+# user-mode RDP server for every GNOME session (unit arrives with gnome-remote-desktop at first boot)
+ln -sf /usr/lib/systemd/user/gnome-remote-desktop.service /etc/systemd/user/gnome-session.target.wants/gnome-remote-desktop.service
 
 # Symlinks and firmware
 ln -sf /boot/tools/perf /usr/local/bin/perf
