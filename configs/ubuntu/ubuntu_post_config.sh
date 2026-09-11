@@ -90,6 +90,8 @@ chmod 600 "$SKEL_KR/login.keyring"
 
 # User and group setup
 id -u ubuntu &>/dev/null || useradd -m -d /home/ubuntu -s /bin/bash ubuntu
+cp -a /etc/skel/. /home/ubuntu/
+chown -R ubuntu:ubuntu /home/ubuntu
 getent group wayland &>/dev/null || groupadd wayland
 usermod -aG sudo,input,video,wayland,render ubuntu || true
 passwd --delete root >/dev/null || true
