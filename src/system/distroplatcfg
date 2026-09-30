@@ -134,7 +134,11 @@ esac
 #if [ -f /usr/lib/udev/rules.d/50-firmware.rules ]; then
 #    safe_run sed -i 's/^SUBSYSTEM/#SUBSYSTEM/' /usr/lib/udev/rules.d/50-firmware.rules
 #fi
-safe_run /usr/bin/hostnamectl set-hostname "${board_id}"
+case "$(cat /sys/devices/soc0/machine 2>/dev/null)" in
+    *"i.MX95 SMARC"*) hostname="smarc-imx95" ;;
+    *)                hostname="${board_id}" ;;
+esac
+safe_run /usr/bin/hostnamectl set-hostname "${hostname}"
 
 safe_disable_service strongswan
 
