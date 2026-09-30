@@ -48,6 +48,8 @@ install -D -m 644 src/system/gnome/gnome-display-layout.service "$ROOTDIR"/usr/l
 
 echo "lontium-lt9611uxd" > "$ROOTDIR"/etc/modules-load.d/lt9611uxd.conf
 echo "/dev/mmcblk0 0x700000 0x4000" > "$ROOTDIR"/etc/fw_env.config
+# zram swap: 25% of RAM, zstd (the kernel only has the zstd backend, the lz4
+sed -i 's/^#\?ALGO=.*/ALGO=zstd/; s/^#\?PERCENT=.*/PERCENT=25/' "$ROOTDIR"/etc/default/zramswap
 
 install -D -m 644 configs/ubuntu/extra_packages_list "$ROOTDIR"/etc/
 
